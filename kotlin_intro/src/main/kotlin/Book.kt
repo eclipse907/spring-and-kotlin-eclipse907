@@ -1,4 +1,4 @@
-class Book (
+data class Book (
     val inventoryNumber: Long,
     val title: String,
     val authorName: String
@@ -18,15 +18,5 @@ class Book (
     }
 
     override fun hashCode() = inventoryNumber.hashCode()
-
-    override fun toString() = """
-        $authorName
-        $title
-        inventoryNumber=$inventoryNumber
-    """.trimIndent()
-
-    operator fun component1() = inventoryNumber
-    operator fun component2() = title
-    operator fun component3() = authorName
 
 }
