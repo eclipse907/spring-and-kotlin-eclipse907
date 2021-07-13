@@ -1,5 +1,6 @@
 import java.lang.IllegalArgumentException
 import java.time.LocalDate
+import java.util.function.Predicate
 
 object Library {
 
@@ -16,7 +17,7 @@ object Library {
         Book(10, "The Lord of the Rings", "J.R.R. Tolkien")
     )
 
-    private val rentedBooks: MutableList<RentedBook> = mutableListOf()
+    private val rentedBooks: MutableMap<String, MutableList<RentedBook>> = mutableMapOf()
 
     private data class RentedBook (
         val customerOIB: String,
@@ -24,34 +25,31 @@ object Library {
         val dueDate: LocalDate
     )
 
-    fun isBookAvailable(title: String, authorName: String): Boolean {
-        for (book in booksInLibrary) {
-            if (book.title == title && book.authorName == authorName && !isBookRented(book)) {
-                return true
-            }
-        }
-        return false
-    }
+    fun isBookAvailable(title: String, authorName: String) =
+        booksInLibrary.any { book ->  book.title == title && book.authorName == authorName && !isBookRented(book)}
 
     fun rentBook(title: String, authorName: String, customerOIB: String, duration: RentDuration): Book? {
-        for (book in booksInLibrary) {
-            if (book.title == title && book.authorName == authorName && !isBookRented(book)) {
-                val dueDate = when (duration) {
-                    RentDuration.TWO_WEEKS ->  LocalDate.now().plusWeeks(2)
-                    RentDuration.MONTH -> LocalDate.now().plusMonths(1)
-                    RentDuration.TWO_MONTHS -> LocalDate.now().plusMonths(2)
-                }
-                rentedBooks.add(RentedBook(customerOIB, book, dueDate))
-                return book
+        val bookToRent =
+            booksInLibrary.find { book -> book.title == title && book.authorName == authorName && !isBookRented(book)}
+        if (bookToRent != null) {
+            val dueDate = when (duration) {
+                RentDuration.TWO_WEEKS ->  LocalDate.now().plusWeeks(2)
+                RentDuration.MONTH -> LocalDate.now().plusMonths(1)
+                RentDuration.TWO_MONTHS -> LocalDate.now().plusMonths(2)
             }
+            val customerRentedBooks = rentedBooks.getOrElse(customerOIB) {
+                val rentedBooksList = mutableListOf<RentedBook>()
+                rentedBooks[customerOIB] = rentedBooksList
+                rentedBooksList
+            }
+            customerRentedBooks.add(RentedBook(customerOIB, bookToRent, dueDate))
         }
-        return null
+        return bookToRent
     }
 
     fun returnBook(book: Book) {
-        for (i in rentedBooks.indices) {
-            if (rentedBooks[i].book == book) {
-                rentedBooks.removeAt(i)
+        for ((_, value) in rentedBooks) {
+            if (value.removeIf { rentedBook -> rentedBook.book == book }) {
                 return
             }
         }
@@ -59,8 +57,8 @@ object Library {
     }
 
     fun isBookRented(book: Book): Boolean {
-        for (rentedBook in rentedBooks) {
-            if (rentedBook.book == book) {
+        for ((_, value) in rentedBooks) {
+            if (value.any { rentedBook -> rentedBook.book == book }) {
                 return true
             }
         }
@@ -69,10 +67,8 @@ object Library {
 
     fun getRentedBooks(customerOIB: String): List<RentedBookInformation> {
         val rentedBooksInformation = mutableListOf<RentedBookInformation>()
-        for (rentedBook in rentedBooks) {
-            if (rentedBook.customerOIB == customerOIB) {
-                rentedBooksInformation.add(RentedBookInformation(rentedBook.book, rentedBook.dueDate))
-            }
+        rentedBooks[customerOIB]?.forEach { rentedBook ->
+            rentedBooksInformation.add(RentedBookInformation(rentedBook.book, rentedBook.dueDate))
         }
         return rentedBooksInformation
     }
