@@ -2,7 +2,7 @@ package courseservice
 
 import io.mockk.every
 import io.mockk.mockk
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -33,10 +33,10 @@ class CourseServiceTest {
         every {
             courseRepository.findById(2)
         } returns Course(2, "OPP")
-        Assertions.assertThat(courseService.addCourse("OOP")).isEqualTo(1)
-        Assertions.assertThat(courseService.addCourse("OPP")).isEqualTo(2)
-        Assertions.assertThat(courseService.getCourseWithId(1)).isEqualTo(Course(1, "OOP"))
-        Assertions.assertThat(courseService.getCourseWithId(2)).isEqualTo(Course(2, "OPP"))
+        assertThat(courseService.addCourse("OOP")).isEqualTo(1)
+        assertThat(courseService.addCourse("OPP")).isEqualTo(2)
+        assertThat(courseService.getCourseWithId(1)).isEqualTo(Course(1, "OOP"))
+        assertThat(courseService.getCourseWithId(2)).isEqualTo(Course(2, "OPP"))
     }
 
     @Test
@@ -54,10 +54,10 @@ class CourseServiceTest {
         every {
             courseRepository.findById(2)
         } returns Course(2, "OPP")
-        Assertions.assertThat(courseService.addCourse("OOP")).isEqualTo(1)
-        Assertions.assertThat(courseService.addCourse("OPP")).isEqualTo(2)
-        Assertions.assertThat(courseService.getCourseWithId(1)).isEqualTo(Course(1, "OOP"))
-        Assertions.assertThat(courseService.getCourseWithId(2)).isEqualTo(Course(2, "OPP"))
+        assertThat(courseService.addCourse("OOP")).isEqualTo(1)
+        assertThat(courseService.addCourse("OPP")).isEqualTo(2)
+        assertThat(courseService.getCourseWithId(1)).isEqualTo(Course(1, "OOP"))
+        assertThat(courseService.getCourseWithId(2)).isEqualTo(Course(2, "OPP"))
     }
 
     @Test
@@ -87,12 +87,12 @@ class CourseServiceTest {
         every {
             courseService.deleteCourseWithId(3)
         } returns Course(3, "APR")
-        Assertions.assertThat(courseService.addCourse("OOP")).isEqualTo(1)
-        Assertions.assertThat(courseService.addCourse("OPP")).isEqualTo(2)
-        Assertions.assertThat(courseService.addCourse("APR")).isEqualTo(3)
-        Assertions.assertThat(courseService.deleteCourseWithId(1)).isEqualTo(Course(1, "OOP"))
-        Assertions.assertThat(courseService.deleteCourseWithId(3)).isEqualTo(Course(3, "APR"))
-        Assertions.assertThat(courseService.getCourseWithId(2)).isEqualTo(Course(2, "OPP"))
+        assertThat(courseService.addCourse("OOP")).isEqualTo(1)
+        assertThat(courseService.addCourse("OPP")).isEqualTo(2)
+        assertThat(courseService.addCourse("APR")).isEqualTo(3)
+        assertThat(courseService.deleteCourseWithId(1)).isEqualTo(Course(1, "OOP"))
+        assertThat(courseService.deleteCourseWithId(3)).isEqualTo(Course(3, "APR"))
+        assertThat(courseService.getCourseWithId(2)).isEqualTo(Course(2, "OPP"))
     }
 
 }

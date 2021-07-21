@@ -15,7 +15,6 @@ class ApplicationConfiguration(
 ) {
 
     @Bean
-    @Lazy(true)
     fun getCourseFileResource() = PathResource("${dataSource.dbName}.txt")
 
 }
