@@ -1,6 +1,7 @@
 package com.infinumacademy.project.services
 
 import com.infinumacademy.project.exceptions.CarNotFoundException
+import com.infinumacademy.project.exceptions.WrongCarDataException
 import com.infinumacademy.project.models.Car
 import com.infinumacademy.project.models.CarCheckUp
 import com.infinumacademy.project.repositories.CarRepository
@@ -17,24 +18,22 @@ class CarService(private val carRepository: CarRepository) {
 
     fun addCar(car: Car): Car {
         if (car.dateAdded > LocalDate.now()) {
-            throw IllegalArgumentException("Car added date can't be after current date")
+            throw WrongCarDataException("Car added date can't be after current date")
         }
         if (car.manufacturerName.isBlank()) {
-            throw IllegalArgumentException("Manufacturer name can't be blank")
+            throw WrongCarDataException("Manufacturer name can't be blank")
         }
         if (car.modelName.isBlank()) {
-            throw IllegalArgumentException("Model name can't be blank")
+            throw WrongCarDataException("Model name can't be blank")
         }
         if (car.productionYear.isAfter(Year.now())) {
-            throw IllegalArgumentException("Car production year can't be after current year")
+            throw WrongCarDataException("Car production year can't be after current year")
         }
         car.id = carRepository.getAllCarIds().maxOrNull()?.plus(1) ?: 0
-        carRepository.insert(car)
+        carRepository.save(car)
         return car
     }
 
-    fun addCarCheckUpToCar(carCheckUp: CarCheckUp) = carRepository.updateCarWithCarCheckUp(carCheckUp)
-
-    fun getAllCars() = carRepository.getAllCars().onEach { car -> car.carCheckUps.sortByDescending { it.timeOfCheckUp } }
+    fun getAllCars() = carRepository.findAll().onEach { car -> car.carCheckUps.sortByDescending { it.timeOfCheckUp } }
 
 }

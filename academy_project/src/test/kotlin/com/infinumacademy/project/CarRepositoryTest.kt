@@ -10,21 +10,17 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Year
-import java.time.format.DateTimeFormatter
 
 class CarRepositoryTest {
 
     private val carRepository = CarRepository()
-
-    private val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-    private val dateTimeFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
 
     @Test
     fun test1() {
         val car1 = Car(
             0,
             45,
-            LocalDate.parse("01-02-2020", dateFormat),
+            LocalDate.parse("2020-02-01"),
             "Toyota",
             "Yaris",
             Year.parse("2018"),
@@ -33,19 +29,19 @@ class CarRepositoryTest {
         val car2 = Car(
             1,
             56,
-            LocalDate.parse("03-09-2019", dateFormat),
+            LocalDate.parse("2019-09-03"),
             "Opel",
             "Astra",
             Year.parse("2016"),
             123654,
         )
-        carRepository.insert(car1)
+        carRepository.save(car1)
         assertThat(carRepository.findById(0)).isEqualTo(car1)
-        carRepository.insert(car2)
+        carRepository.save(car2)
         assertThat(carRepository.findById(1)).isEqualTo(car2)
         val carCheckUp = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
@@ -62,7 +58,7 @@ class CarRepositoryTest {
         val car1 = Car(
             0,
             45,
-            LocalDate.parse("01-02-2020", dateFormat),
+            LocalDate.parse("2020-02-01"),
             "Toyota",
             "Yaris",
             Year.parse("2018"),
@@ -71,17 +67,17 @@ class CarRepositoryTest {
         val car2 = Car(
             1,
             56,
-            LocalDate.parse("03-09-2019", dateFormat),
+            LocalDate.parse("2019-09-03"),
             "Opel",
             "Astra",
             Year.parse("2016"),
             123654,
         )
-        carRepository.insert(car1)
+        carRepository.save(car1)
         assertThat(carRepository.findById(0)).isEqualTo(car1)
-        carRepository.insert(car2)
+        carRepository.save(car2)
         assertThat(carRepository.findById(1)).isEqualTo(car2)
-        assertThat(carRepository.getAllCars()).isEqualTo(listOf(car1, car2))
+        assertThat(carRepository.findAll()).isEqualTo(listOf(car1, car2))
         assertThat(carRepository.getAllCarIds()).isEqualTo(listOf(0L, 1L))
     }
 

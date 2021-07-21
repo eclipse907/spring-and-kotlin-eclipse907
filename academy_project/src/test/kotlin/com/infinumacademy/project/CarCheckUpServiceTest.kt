@@ -2,10 +2,11 @@ package com.infinumacademy.project
 
 import com.infinumacademy.project.exceptions.CarCheckUpNotFoundException
 import com.infinumacademy.project.exceptions.CarNotFoundException
+import com.infinumacademy.project.exceptions.WrongCarCheckUpDataException
 import com.infinumacademy.project.models.CarCheckUp
 import com.infinumacademy.project.repositories.CarCheckUpRepository
+import com.infinumacademy.project.repositories.CarRepository
 import com.infinumacademy.project.services.CarCheckUpService
-import com.infinumacademy.project.services.CarService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -14,27 +15,24 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class CarCheckUpServiceTest {
 
     private val carCheckUpRepository = mockk<CarCheckUpRepository>()
-    private val carService = mockk<CarService>()
+    private val carRepository = mockk<CarRepository>()
 
     private lateinit var carCheckUpService: CarCheckUpService
 
-    private val dateTimeFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
-
     @BeforeEach
     fun setUp() {
-        carCheckUpService = CarCheckUpService(carCheckUpRepository, carService)
+        carCheckUpService = CarCheckUpService(carCheckUpRepository, carRepository)
     }
 
     @Test
     fun test1() {
         val carCheckUp = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
@@ -54,7 +52,7 @@ class CarCheckUpServiceTest {
     fun test2() {
         val carCheckUp1 = CarCheckUp(
             25,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
@@ -62,92 +60,94 @@ class CarCheckUpServiceTest {
         every { carCheckUpRepository.findById(carCheckUp1.id) } returns carCheckUp1
         assertThatThrownBy {
             carCheckUpService.addCarCheckUp(carCheckUp1)
-        }.isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("Car check-up with id ${carCheckUp1.id} already exists")
+        }.isInstanceOf(WrongCarCheckUpDataException::class.java)
+            .hasMessage("400 BAD_REQUEST \"Car check-up with id ${carCheckUp1.id} already exists\"")
         every { carCheckUpRepository.findById(any()) } returns null
         val carCheckUp2 = CarCheckUp(
             0,
-            LocalDateTime.parse("15-10-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-10-15T20:35:10"),
             "Bob",
             23.56,
             0
         )
         assertThatThrownBy {
             carCheckUpService.addCarCheckUp(carCheckUp2)
-        }.isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessage("Date and time of check-up can't be after current date and time")
+        }.isInstanceOf(WrongCarCheckUpDataException::class.java)
+            .hasMessage("400 BAD_REQUEST \"Date and time of check-up can't be after current date and time\"")
         val carCheckUp3 = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "",
             23.56,
             0
         )
         assertThatThrownBy {
             carCheckUpService.addCarCheckUp(carCheckUp3)
-        }.isInstanceOf(IllegalArgumentException::class.java).hasMessage("Worker name can't be blank")
+        }.isInstanceOf(WrongCarCheckUpDataException::class.java)
+            .hasMessage("400 BAD_REQUEST \"Worker name can't be blank\"")
         val carCheckUp4 = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             -23.56,
             0
         )
         assertThatThrownBy {
             carCheckUpService.addCarCheckUp(carCheckUp4)
-        }.isInstanceOf(IllegalArgumentException::class.java).hasMessage("Price can't be less than zero")
+        }.isInstanceOf(WrongCarCheckUpDataException::class.java)
+            .hasMessage("400 BAD_REQUEST \"Price can't be less than zero\"")
         val carCheckUp5 = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
         )
-        every { carService.addCarCheckUpToCar(carCheckUp5) } throws CarNotFoundException(carCheckUp5.carId)
+        every { carRepository.updateCarWithCarCheckUp(carCheckUp5) } throws CarNotFoundException(carCheckUp5.carId)
         assertThatThrownBy {
             carCheckUpService.addCarCheckUp(carCheckUp5)
         }.isInstanceOf(CarNotFoundException::class.java).hasMessage("404 NOT_FOUND \"Car with id 0 not found\"")
         val carCheckUp6 = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
         )
-        every { carService.addCarCheckUpToCar(carCheckUp6) } returns Unit
-        every { carCheckUpRepository.insert(carCheckUp6) } returns Unit
+        every { carRepository.updateCarWithCarCheckUp(carCheckUp6) } returns Unit
+        every { carCheckUpRepository.save(carCheckUp6) } returns Unit
         assertThat(carCheckUpService.addCarCheckUp(carCheckUp6)).isEqualTo(carCheckUp6)
         verify(exactly = 6) { carCheckUpRepository.findById(any()) }
-        verify(exactly = 2) { carService.addCarCheckUpToCar(any()) }
-        verify(exactly = 1) { carCheckUpRepository.insert(carCheckUp6) }
+        verify(exactly = 2) { carRepository.updateCarWithCarCheckUp(any()) }
+        verify(exactly = 1) { carCheckUpRepository.save(carCheckUp6) }
     }
 
     @Test
     fun test3() {
         val carCheckUp1 = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
         )
         val carCheckUp2 = CarCheckUp(
             1,
-            LocalDateTime.parse("23-12-2019 10:47:49", dateTimeFormat),
+            LocalDateTime.parse("2019-12-23T10:47:49"),
             "Alice",
             150.34,
             0
         )
         val carCheckUp3 = CarCheckUp(
             2,
-            LocalDateTime.parse("20-10-2018 12:05:10", dateTimeFormat),
+            LocalDateTime.parse("2018-10-20T12:05:10"),
             "Philip",
             234.09,
             0
         )
-        every { carCheckUpRepository.getAllCarCheckUps() } returns listOf(carCheckUp2, carCheckUp1, carCheckUp3)
+        every { carCheckUpRepository.findAll() } returns listOf(carCheckUp2, carCheckUp1, carCheckUp3)
         assertThat(carCheckUpService.getAllCarCheckUps()).isEqualTo(listOf(carCheckUp1, carCheckUp2, carCheckUp3))
-        verify(exactly = 1) { carCheckUpRepository.getAllCarCheckUps() }
+        verify(exactly = 1) { carCheckUpRepository.findAll() }
     }
 
 }

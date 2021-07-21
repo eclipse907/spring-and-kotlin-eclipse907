@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 data class CarCheckUp(
     val id: Long,
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss", timezone = "Europe/Zagreb")
+    @JsonFormat(timezone = JsonFormat.DEFAULT_TIMEZONE)
     val timeOfCheckUp: LocalDateTime,
     val workerName: String,
     val price: Double,

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.controllers.CarCheckUpController
 import com.infinumacademy.project.exceptions.CarCheckUpNotFoundException
 import com.infinumacademy.project.exceptions.CarNotFoundException
+import com.infinumacademy.project.exceptions.WrongCarCheckUpDataException
 import com.infinumacademy.project.models.CarCheckUp
 import com.infinumacademy.project.services.CarCheckUpService
 import com.ninjasquad.springmockk.MockkBean
@@ -17,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @WebMvcTest(CarCheckUpController::class)
 class CarCheckUpControllerTest @Autowired constructor(
@@ -28,13 +28,11 @@ class CarCheckUpControllerTest @Autowired constructor(
     @MockkBean
     private lateinit var carCheckUpService: CarCheckUpService
 
-    private val dateTimeFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
-
     @Test
     fun test1() {
         val carCheckUp = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
@@ -51,7 +49,7 @@ class CarCheckUpControllerTest @Autowired constructor(
     fun test2() {
         val carCheckUp = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
@@ -77,14 +75,14 @@ class CarCheckUpControllerTest @Autowired constructor(
     fun test3() {
         val carCheckUp1 = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
         )
         val carCheckUp2 = CarCheckUp(
             1,
-            LocalDateTime.parse("23-12-2019 10:47:49", dateTimeFormat),
+            LocalDateTime.parse("2019-12-23T10:47:49"),
             "Alice",
             150.34,
             1
@@ -101,12 +99,12 @@ class CarCheckUpControllerTest @Autowired constructor(
     fun test4() {
         val carCheckUp = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2025 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2025-06-06T20:35:10"),
             "Bob",
             23.56,
             0
         )
-        every { carCheckUpService.addCarCheckUp(carCheckUp) } throws IllegalArgumentException(
+        every { carCheckUpService.addCarCheckUp(carCheckUp) } throws WrongCarCheckUpDataException(
             "Date and time of check-up can't be after current date and time"
         )
         mvc.post("/car-checkups") {
@@ -114,7 +112,6 @@ class CarCheckUpControllerTest @Autowired constructor(
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
-            jsonPath("$.message") { value("Date and time of check-up can't be after current date and time") }
         }
         every { carCheckUpService.getCarCheckUpWithId(0) } throws CarCheckUpNotFoundException(0)
         mvc.get("/car-checkups/0").andExpect {
@@ -128,7 +125,7 @@ class CarCheckUpControllerTest @Autowired constructor(
     fun test5() {
         val carCheckUp = CarCheckUp(
             0,
-            LocalDateTime.parse("06-06-2021 20:35:10", dateTimeFormat),
+            LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             766

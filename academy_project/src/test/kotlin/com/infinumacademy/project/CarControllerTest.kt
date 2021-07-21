@@ -3,6 +3,7 @@ package com.infinumacademy.project
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.controllers.CarController
 import com.infinumacademy.project.exceptions.CarNotFoundException
+import com.infinumacademy.project.exceptions.WrongCarDataException
 import com.infinumacademy.project.models.Car
 import com.infinumacademy.project.services.CarService
 import com.ninjasquad.springmockk.MockkBean
@@ -18,7 +19,6 @@ import org.springframework.test.web.servlet.post
 import java.lang.NullPointerException
 import java.time.LocalDate
 import java.time.Year
-import java.time.format.DateTimeFormatter
 
 @WebMvcTest(CarController::class)
 class CarControllerTest @Autowired constructor(
@@ -29,14 +29,12 @@ class CarControllerTest @Autowired constructor(
     @MockkBean
     private lateinit var carService: CarService
 
-    private val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-
     @Test
     fun test1() {
         val car = Car(
             0,
             45,
-            LocalDate.parse("01-02-2020", dateFormat),
+            LocalDate.parse("2020-02-01"),
             "Toyota",
             "Yaris",
             Year.parse("2018"),
@@ -55,7 +53,7 @@ class CarControllerTest @Autowired constructor(
         val car = Car(
             null,
             45,
-            LocalDate.parse("01-02-2020", dateFormat),
+            LocalDate.parse("2020-02-01"),
             "Toyota",
             "Yaris",
             Year.parse("2018"),
@@ -83,7 +81,7 @@ class CarControllerTest @Autowired constructor(
         val car1 = Car(
             0,
             45,
-            LocalDate.parse("01-02-2020", dateFormat),
+            LocalDate.parse("2020-02-01"),
             "Toyota",
             "Yaris",
             Year.parse("2018"),
@@ -92,7 +90,7 @@ class CarControllerTest @Autowired constructor(
         val car2 = Car(
             1,
             56,
-            LocalDate.parse("03-09-2019", dateFormat),
+            LocalDate.parse("2019-09-03"),
             "Opel",
             "Astra",
             Year.parse("2016"),
@@ -115,19 +113,18 @@ class CarControllerTest @Autowired constructor(
         val car = Car(
             null,
             45,
-            LocalDate.parse("01-02-2020", dateFormat),
+            LocalDate.parse("2020-02-01"),
             "Toyota",
             "",
             Year.parse("2018"),
             123456
         )
-        every { carService.addCar(car) } throws IllegalArgumentException("Model name can't be blank")
+        every { carService.addCar(car) } throws WrongCarDataException("Model name can't be blank")
         mvc.post("/cars") {
             content = mapper.writeValueAsString(car)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
-            jsonPath("$.message") { value("Model name can't be blank") }
         }
         verify(exactly = 1) { carService.getCarWithId(0) }
         verify(exactly = 1) { carService.addCar(car) }
@@ -138,7 +135,7 @@ class CarControllerTest @Autowired constructor(
         val car = Car(
             null,
             45,
-            LocalDate.parse("01-02-2020", dateFormat),
+            LocalDate.parse("2020-02-01"),
             "Toyota",
             "Yaris",
             Year.parse("2018"),

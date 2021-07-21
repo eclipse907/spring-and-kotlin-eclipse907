@@ -8,7 +8,7 @@ import java.time.Year
 data class Car(
     var id: Long? = null,
     val ownerId: Long,
-    @JsonFormat(pattern = "dd-MM-yyyy", timezone = "Europe/Zagreb")
+    @JsonFormat(timezone = JsonFormat.DEFAULT_TIMEZONE)
     val dateAdded: LocalDate,
     val manufacturerName: String,
     val modelName: String,

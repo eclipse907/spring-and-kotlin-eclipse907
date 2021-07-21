@@ -12,14 +12,13 @@ class CarRepository {
 
     fun findById(id: Long) = cars[id]
 
-    fun insert(car: Car) {
+    fun save(car: Car) {
         cars[car.id ?: throw NullPointerException("Car id is null")] = car
     }
 
-    fun updateCarWithCarCheckUp(carCheckUp: CarCheckUp) =
-        cars[carCheckUp.carId]?.addCarCheckUp(carCheckUp) ?: throw CarNotFoundException(carCheckUp.carId)
+    fun updateCarWithCarCheckUp(carCheckUp: CarCheckUp) = cars[carCheckUp.carId]?.addCarCheckUp(carCheckUp)
 
-    fun getAllCars() = cars.values.toList()
+    fun findAll() = cars.values.toList()
 
     fun getAllCarIds() = cars.keys.toList()
 

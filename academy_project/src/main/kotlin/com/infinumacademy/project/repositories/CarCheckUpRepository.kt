@@ -10,10 +10,10 @@ class CarCheckUpRepository {
 
     fun findById(id: Long) = carCheckUps[id]
 
-    fun insert(carCheckUp: CarCheckUp) {
+    fun save(carCheckUp: CarCheckUp) {
         carCheckUps[carCheckUp.id] = carCheckUp
     }
 
-    fun getAllCarCheckUps() = carCheckUps.values.toList()
+    fun findAll() = carCheckUps.values.toList()
 
 }
