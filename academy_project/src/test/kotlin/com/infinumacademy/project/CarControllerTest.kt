@@ -1,57 +1,107 @@
 package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.infinumacademy.project.controllers.CarController
-import com.infinumacademy.project.exceptions.CarNotFoundException
-import com.infinumacademy.project.exceptions.WrongCarDataException
+import com.infinumacademy.project.dtos.CarRequestDto
 import com.infinumacademy.project.models.Car
-import com.infinumacademy.project.services.CarService
-import com.ninjasquad.springmockk.MockkBean
-import io.mockk.every
-import io.mockk.verify
+import com.infinumacademy.project.models.CarCheckUp
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
-import java.lang.NullPointerException
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Year
 
-@WebMvcTest(CarController::class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class CarControllerTest @Autowired constructor(
     private val mvc: MockMvc,
     private val mapper: ObjectMapper
 ) {
 
-    @MockkBean
-    private lateinit var carService: CarService
-
     @Test
     fun test1() {
-        val car = Car(
-            0,
+        mvc.get("/cars/0").andExpect {
+            status { isNotFound() }
+            jsonPath("$.message") { value("404 NOT_FOUND \"Car with id 0 not found\"") }
+        }
+        val carToAdd1 = CarRequestDto(
             45,
-            LocalDate.parse("2020-02-01"),
+            LocalDate.parse("2021-12-12"),
             "Toyota",
             "Yaris",
             Year.parse("2018"),
-            123456
+            123456,
         )
-        every { carService.getCarWithId(0) } returns car
-        mvc.get("/cars/0").andExpect {
-            status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(car)) }
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(carToAdd1)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Car added date can't be after current date\"")
+            }
         }
-        verify(exactly = 1) { carService.getCarWithId(0) }
+        val carToAdd2 = CarRequestDto(
+            45,
+            LocalDate.parse("2020-12-12"),
+            "",
+            "Yaris",
+            Year.parse("2018"),
+            123456,
+        )
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(carToAdd2)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Manufacturer name can't be blank\"")
+            }
+        }
+        val carToAdd3 = CarRequestDto(
+            45,
+            LocalDate.parse("2020-12-12"),
+            "Toyota",
+            "",
+            Year.parse("2018"),
+            123456,
+        )
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(carToAdd3)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Model name can't be blank\"")
+            }
+        }
+        val carToAdd4 = CarRequestDto(
+            45,
+            LocalDate.parse("2020-12-12"),
+            "Toyota",
+            "Yaris",
+            Year.parse("2022"),
+            123456,
+        )
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(carToAdd4)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Car production year can't be after current year\"")
+            }
+        }
     }
 
     @Test
     fun test2() {
-        val car = Car(
-            null,
+        val carToAdd = CarRequestDto(
             45,
             LocalDate.parse("2020-02-01"),
             "Toyota",
@@ -59,27 +109,55 @@ class CarControllerTest @Autowired constructor(
             Year.parse("2018"),
             123456
         )
-        every { carService.addCar(car) } returns car.copy(id = 0)
-        every { carService.getCarWithId(0) } returns car.copy(id = 0)
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(car)
+            content = mapper.writeValueAsString(carToAdd)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
-            header { stringValues("Location", "http://localhost/cars/0") }
+            header { stringValues("Location", "http://localhost/cars/1") }
         }
-        mvc.get("/cars/0").andExpect {
+        mvc.get("/cars/1").andExpect {
             status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(car.copy(id = 0))) }
+            content { json(mapper.writeValueAsString(carToAdd.toCar().copy(id = 1))) }
         }
-        verify(exactly = 1) { carService.addCar(car) }
-        verify(exactly = 1) { carService.getCarWithId(0) }
     }
 
     @Test
     fun test3() {
         val car1 = Car(
-            0,
+            1,
+            45,
+            LocalDate.parse("2020-02-01"),
+            "Toyota",
+            "Yaris",
+            Year.parse("2018"),
+            123456
+        )
+        val carToAdd = CarRequestDto(
+            56,
+            LocalDate.parse("2019-09-03"),
+            "Opel",
+            "Astra",
+            Year.parse("2016"),
+            123654
+        )
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(carToAdd)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isCreated() }
+            header { stringValues("Location", "http://localhost/cars/2") }
+        }
+        mvc.get("/cars").andExpect {
+            status { is2xxSuccessful() }
+            content { json(mapper.writeValueAsString(listOf(car1, carToAdd.toCar().copy(id = 2)))) }
+        }
+    }
+
+    @Test
+    fun test4() {
+        val car1 = Car(
+            1,
             45,
             LocalDate.parse("2020-02-01"),
             "Toyota",
@@ -88,7 +166,7 @@ class CarControllerTest @Autowired constructor(
             123456
         )
         val car2 = Car(
-            1,
+            2,
             56,
             LocalDate.parse("2019-09-03"),
             "Opel",
@@ -96,59 +174,91 @@ class CarControllerTest @Autowired constructor(
             Year.parse("2016"),
             123654
         )
-        every { carService.getAllCars() } returns listOf(car1, car2)
-        mvc.get("/cars").andExpect {
-            status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(listOf(car1, car2))) }
-        }
-        verify(exactly = 1) { carService.getAllCars() }
-    }
-
-    @Test
-    fun test4() {
-        every { carService.getCarWithId(0) } throws CarNotFoundException(0)
-        mvc.get("/cars/0").andExpect {
-            status { isNotFound() }
-        }
-        val car = Car(
-            null,
+        val carToAdd = CarRequestDto(
             45,
             LocalDate.parse("2020-02-01"),
             "Toyota",
-            "",
+            "Corolla",
             Year.parse("2018"),
             123456
         )
-        every { carService.addCar(car) } throws WrongCarDataException("Model name can't be blank")
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(car)
+            content = mapper.writeValueAsString(carToAdd)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
-            status { isBadRequest() }
+            status { isCreated() }
+            header { stringValues("Location", "http://localhost/cars/3") }
         }
-        verify(exactly = 1) { carService.getCarWithId(0) }
-        verify(exactly = 1) { carService.addCar(car) }
+        mvc.get("/cars").andExpect {
+            status { is2xxSuccessful() }
+            content { json(mapper.writeValueAsString(listOf(car1, car2, carToAdd.toCar().copy(id = 3)))) }
+        }
     }
 
     @Test
     fun test5() {
-        val car = Car(
-            null,
-            45,
+        val carToAdd = CarRequestDto(
+            4654,
             LocalDate.parse("2020-02-01"),
             "Toyota",
-            "Yaris",
+            "Corolla",
             Year.parse("2018"),
             123456
         )
-        every { carService.addCar(car) } throws NullPointerException("Car id is null")
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(car)
+            content = mapper.writeValueAsString(carToAdd)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
-            status { isInternalServerError() }
-            jsonPath("$.message") { value("Car id is null") }
+            status { isCreated() }
+            header { stringValues("Location", "http://localhost/cars/4") }
         }
-        verify(exactly = 1) { carService.addCar(car) }
+        val carCheckUp1 = CarCheckUp(
+            25,
+            LocalDateTime.parse("2021-06-06T20:35:10"),
+            "Bob",
+            23.56,
+            4
+        )
+        val carCheckUp2 = CarCheckUp(
+            34,
+            LocalDateTime.parse("2018-12-23T10:30:10"),
+            "Bob",
+            23.56,
+            4
+        )
+        val carCheckUp3 = CarCheckUp(
+            63,
+            LocalDateTime.parse("2017-08-06T15:05:30"),
+            "Bob",
+            23.56,
+            4
+        )
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUp2)
+            contentType = MediaType.APPLICATION_JSON
+        }
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUp1)
+            contentType = MediaType.APPLICATION_JSON
+        }
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUp3)
+            contentType = MediaType.APPLICATION_JSON
+        }
+        val carToCheck = Car(
+            4,
+            4654,
+            LocalDate.parse("2020-02-01"),
+            "Toyota",
+            "Corolla",
+            Year.parse("2018"),
+            123456,
+            mutableListOf(carCheckUp1, carCheckUp2, carCheckUp3)
+        )
+        mvc.get("/cars/4").andExpect {
+            status { is2xxSuccessful() }
+            content { json(mapper.writeValueAsString(carToCheck)) }
+        }
     }
+
 }

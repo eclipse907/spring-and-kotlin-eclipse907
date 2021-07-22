@@ -1,5 +1,6 @@
 package com.infinumacademy.project.exceptions
 
+import org.springframework.dao.DataAccessException
 import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 
@@ -11,3 +12,7 @@ class CarNotFoundException(id: Long) : ResponseStatusException(HttpStatus.NOT_FO
 class WrongCarDataException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
 
 class WrongCarCheckUpDataException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
+
+class WrongCarCheckUpCarIdException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
+
+class CarIdCreationException(message: String) : DataAccessException(message)

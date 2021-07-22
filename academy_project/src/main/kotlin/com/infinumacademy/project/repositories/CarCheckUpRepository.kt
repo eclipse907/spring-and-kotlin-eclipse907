@@ -1,19 +1,10 @@
 package com.infinumacademy.project.repositories
 
 import com.infinumacademy.project.models.CarCheckUp
-import org.springframework.stereotype.Repository
 
-@Repository
-class CarCheckUpRepository {
-
-    private val carCheckUps = mutableMapOf<Long, CarCheckUp>()
-
-    fun findById(id: Long) = carCheckUps[id]
-
-    fun save(carCheckUp: CarCheckUp) {
-        carCheckUps[carCheckUp.id] = carCheckUp
-    }
-
-    fun findAll() = carCheckUps.values.toList()
-
+interface CarCheckUpRepository {
+    fun findById(id: Long): CarCheckUp?
+    fun save(carCheckUp: CarCheckUp)
+    fun findByCarId(carId: Long): List<CarCheckUp>
+    fun findAll(): List<CarCheckUp>
 }

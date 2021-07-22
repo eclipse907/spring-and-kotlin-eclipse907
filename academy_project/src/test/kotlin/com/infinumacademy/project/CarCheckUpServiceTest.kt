@@ -1,8 +1,9 @@
 package com.infinumacademy.project
 
 import com.infinumacademy.project.exceptions.CarCheckUpNotFoundException
-import com.infinumacademy.project.exceptions.CarNotFoundException
+import com.infinumacademy.project.exceptions.WrongCarCheckUpCarIdException
 import com.infinumacademy.project.exceptions.WrongCarCheckUpDataException
+import com.infinumacademy.project.models.Car
 import com.infinumacademy.project.models.CarCheckUp
 import com.infinumacademy.project.repositories.CarCheckUpRepository
 import com.infinumacademy.project.repositories.CarRepository
@@ -14,7 +15,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Year
 
 class CarCheckUpServiceTest {
 
@@ -103,10 +106,11 @@ class CarCheckUpServiceTest {
             23.56,
             0
         )
-        every { carRepository.updateCarWithCarCheckUp(carCheckUp5) } throws CarNotFoundException(carCheckUp5.carId)
+        every { carRepository.findById(carCheckUp5.carId) } returns null
         assertThatThrownBy {
             carCheckUpService.addCarCheckUp(carCheckUp5)
-        }.isInstanceOf(CarNotFoundException::class.java).hasMessage("404 NOT_FOUND \"Car with id 0 not found\"")
+        }.isInstanceOf(WrongCarCheckUpCarIdException::class.java)
+            .hasMessage("400 BAD_REQUEST \"Car check-up has non existent car id\"")
         val carCheckUp6 = CarCheckUp(
             0,
             LocalDateTime.parse("2021-06-06T20:35:10"),
@@ -114,11 +118,21 @@ class CarCheckUpServiceTest {
             23.56,
             0
         )
-        every { carRepository.updateCarWithCarCheckUp(carCheckUp6) } returns Unit
+        val car = Car(
+            0,
+            45,
+            LocalDate.parse("2020-02-01"),
+            "Toyota",
+            "Yaris",
+            Year.parse("2018"),
+            123456,
+            mutableListOf(carCheckUp2, carCheckUp1)
+        )
+        every { carRepository.findById(carCheckUp6.carId) } returns car
         every { carCheckUpRepository.save(carCheckUp6) } returns Unit
         assertThat(carCheckUpService.addCarCheckUp(carCheckUp6)).isEqualTo(carCheckUp6)
         verify(exactly = 6) { carCheckUpRepository.findById(any()) }
-        verify(exactly = 2) { carRepository.updateCarWithCarCheckUp(any()) }
+        verify(exactly = 2) { carRepository.findById(any()) }
         verify(exactly = 1) { carCheckUpRepository.save(carCheckUp6) }
     }
 

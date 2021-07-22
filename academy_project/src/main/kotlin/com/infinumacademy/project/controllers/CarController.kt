@@ -1,6 +1,6 @@
 package com.infinumacademy.project.controllers
 
-import com.infinumacademy.project.models.Car
+import com.infinumacademy.project.dtos.CarRequestDto
 import com.infinumacademy.project.services.CarService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -14,8 +14,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 class CarController(private val carService: CarService) {
 
     @PostMapping("/cars")
-    fun addCar(@RequestBody car: Car): ResponseEntity<Unit> {
-        val createdCar = carService.addCar(car)
+    fun addCar(@RequestBody carToAdd: CarRequestDto): ResponseEntity<Unit> {
+        val createdCar = carService.addCar(carToAdd.toCar())
         return ResponseEntity.created(
             ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(createdCar.id).toUri()
         ).build()

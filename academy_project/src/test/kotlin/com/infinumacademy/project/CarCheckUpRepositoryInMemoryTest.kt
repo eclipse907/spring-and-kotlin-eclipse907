@@ -1,14 +1,14 @@
 package com.infinumacademy.project
 
 import com.infinumacademy.project.models.CarCheckUp
-import com.infinumacademy.project.repositories.CarCheckUpRepository
+import com.infinumacademy.project.repositories.CarCheckUpRepositoryInMemory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
-class CarCheckUpRepositoryTest {
+class CarCheckUpRepositoryInMemoryTest {
 
-    private val carCheckUpRepository = CarCheckUpRepository()
+    private val carCheckUpRepository = CarCheckUpRepositoryInMemory()
 
     @Test
     fun test() {

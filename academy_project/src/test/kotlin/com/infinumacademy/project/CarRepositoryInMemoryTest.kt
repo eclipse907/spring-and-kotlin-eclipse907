@@ -3,7 +3,7 @@ package com.infinumacademy.project
 import com.infinumacademy.project.exceptions.CarNotFoundException
 import com.infinumacademy.project.models.Car
 import com.infinumacademy.project.models.CarCheckUp
-import com.infinumacademy.project.repositories.CarRepository
+import com.infinumacademy.project.repositories.CarRepositoryInMemory
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -11,9 +11,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Year
 
-class CarRepositoryTest {
+class CarRepositoryInMemoryTest {
 
-    private val carRepository = CarRepository()
+    private val carRepository = CarRepositoryInMemory()
 
     @Test
     fun test1() {
@@ -48,9 +48,7 @@ class CarRepositoryTest {
         )
         carRepository.updateCarWithCarCheckUp(carCheckUp)
         assertThat(carRepository.findById(0)!!.carCheckUps).isEqualTo(listOf(carCheckUp))
-        assertThatThrownBy {
-            carRepository.updateCarWithCarCheckUp(carCheckUp.copy(carId = 45))
-        }.isInstanceOf(CarNotFoundException::class.java).hasMessage("404 NOT_FOUND \"Car with id 45 not found\"")
+        assertThat(carRepository.updateCarWithCarCheckUp(carCheckUp.copy(carId = 45))).isNull()
     }
 
     @Test
