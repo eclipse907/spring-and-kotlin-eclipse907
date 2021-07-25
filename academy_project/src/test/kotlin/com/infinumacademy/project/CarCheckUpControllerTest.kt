@@ -1,6 +1,7 @@
 package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.infinumacademy.project.dtos.CarCheckUpRequestDto
 import com.infinumacademy.project.dtos.CarRequestDto
 import com.infinumacademy.project.models.CarCheckUp
 import org.junit.jupiter.api.Test
@@ -45,45 +46,27 @@ class CarCheckUpControllerTest @Autowired constructor(
             status { isCreated() }
             header { stringValues("Location", "http://localhost/cars/1") }
         }
-        val carCheckUp1 = CarCheckUp(
-            25,
+        val carCheckUpToAdd1 = CarCheckUpRequestDto(
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             1
         )
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp1)
+            content = mapper.writeValueAsString(carCheckUpToAdd1)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
-            header { stringValues("Location", "http://localhost/car-checkups/${carCheckUp1.id}") }
+            header { stringValues("Location", "http://localhost/car-checkups/1") }
         }
-        val carCheckUp2 = CarCheckUp(
-            25,
-            LocalDateTime.parse("2021-06-06T20:35:10"),
-            "Bob",
-            23.56,
-            1
-        )
-        mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp2)
-            contentType = MediaType.APPLICATION_JSON
-        }.andExpect {
-            status { isBadRequest() }
-            jsonPath("$.message") {
-                value("400 BAD_REQUEST \"Car check-up with id ${carCheckUp2.id} already exists\"")
-            }
-        }
-        val carCheckUp3 = CarCheckUp(
-            45,
+        val carCheckUpToAdd2 = CarCheckUpRequestDto(
             LocalDateTime.parse("2021-10-15T20:35:10"),
             "Bob",
             23.56,
             1
         )
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp3)
+            content = mapper.writeValueAsString(carCheckUpToAdd2)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
@@ -91,15 +74,14 @@ class CarCheckUpControllerTest @Autowired constructor(
                 value("400 BAD_REQUEST \"Date and time of check-up can't be after current date and time\"")
             }
         }
-        val carCheckUp4 = CarCheckUp(
-            67,
+        val carCheckUpToAdd3 = CarCheckUpRequestDto(
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "",
             23.56,
             1
         )
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp4)
+            content = mapper.writeValueAsString(carCheckUpToAdd3)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
@@ -107,15 +89,14 @@ class CarCheckUpControllerTest @Autowired constructor(
                 value("400 BAD_REQUEST \"Worker name can't be blank\"")
             }
         }
-        val carCheckUp5 = CarCheckUp(
-            89,
+        val carCheckUpToAdd4 = CarCheckUpRequestDto(
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             -23.56,
             1
         )
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp5)
+            content = mapper.writeValueAsString(carCheckUpToAdd4)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
@@ -123,79 +104,83 @@ class CarCheckUpControllerTest @Autowired constructor(
                 value("400 BAD_REQUEST \"Price can't be less than zero\"")
             }
         }
-        val carCheckUp6 = CarCheckUp(
-            12,
+        val carCheckUpToAdd5 = CarCheckUpRequestDto(
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             45
         )
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp6)
+            content = mapper.writeValueAsString(carCheckUpToAdd5)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
-            jsonPath("$.message") {
-                value("400 BAD_REQUEST \"Car check-up has non existent car id\"")
-            }
         }
     }
 
     @Test
     fun test2() {
-        val carCheckUp = CarCheckUp(
-            34,
+        val carCheckUpToAdd = CarCheckUpRequestDto(
             LocalDateTime.parse("2018-12-23T10:30:10"),
             "Bob",
             23.56,
             1
         )
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp)
+            content = mapper.writeValueAsString(carCheckUpToAdd)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
-            header { stringValues("Location", "http://localhost/car-checkups/${carCheckUp.id}") }
+            header { stringValues("Location", "http://localhost/car-checkups/3") }
         }
-        mvc.get("/car-checkups/${carCheckUp.id}").andExpect {
+        mvc.get("/car-checkups/3").andExpect {
             status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(carCheckUp)) }
+            content { json(mapper.writeValueAsString(carCheckUpToAdd.toCarCheckUp().copy(id = 3))) }
         }
     }
 
     @Test
     fun test3() {
         val carCheckUp1 = CarCheckUp(
-            25,
+            1,
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             1
         )
         val carCheckUp2 = CarCheckUp(
-            34,
+            3,
             LocalDateTime.parse("2018-12-23T10:30:10"),
             "Bob",
             23.56,
             1
         )
-        val carCheckUp3 = CarCheckUp(
-            63,
+        val carCheckUpToAdd3 = CarCheckUpRequestDto(
             LocalDateTime.parse("2017-08-06T15:05:30"),
             "Bob",
             23.56,
             1
         )
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp3)
+            content = mapper.writeValueAsString(carCheckUpToAdd3)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
-            header { stringValues("Location", "http://localhost/car-checkups/${carCheckUp3.id}") }
+            header { stringValues("Location", "http://localhost/car-checkups/4") }
         }
         mvc.get("/car-checkups").andExpect {
             status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(listOf(carCheckUp2, carCheckUp3, carCheckUp1))) }
+            content {
+                json(
+                    mapper.writeValueAsString(
+                        listOf(
+                            carCheckUp2,
+                            carCheckUpToAdd3.toCarCheckUp().copy(id = 4),
+                            carCheckUp1
+                        )
+                    )
+                )
+            }
         }
     }
 

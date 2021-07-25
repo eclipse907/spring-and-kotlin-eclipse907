@@ -18,10 +18,8 @@ class CarService(
 
     fun getCarWithId(id: Long): Car {
         try {
-            return carRepository.findById(id)?.apply {
-                this.carCheckUps.addAll(carCheckUpRepository.findByCarId(this.id))
-                this.carCheckUps.sortByDescending { it.timeOfCheckUp }
-            } ?: throw CarNotFoundException(id)
+            return carRepository.findById(id)?.copy(carCheckUps = carCheckUpRepository.findByCarId(id))
+                ?: throw CarNotFoundException(id)
         } catch (ex: IncorrectResultSizeDataAccessException) {
             throw CarNotFoundException(id)
         }
@@ -40,14 +38,10 @@ class CarService(
         if (car.productionYear.isAfter(Year.now())) {
             throw WrongCarDataException("Car production year can't be after current year")
         }
-        car.id = carRepository.save(car)
-        car.carCheckUps.addAll(carCheckUpRepository.findByCarId(car.id))
-        return car
+        val id = carRepository.save(car)
+        return car.copy(id = id)
     }
 
-    fun getAllCars() = carRepository.findAll().onEach { car ->
-        car.carCheckUps.addAll(carCheckUpRepository.findByCarId(car.id))
-        car.carCheckUps.sortByDescending { it.timeOfCheckUp }
-    }
+    fun getAllCars() = carRepository.findAll()
 
 }

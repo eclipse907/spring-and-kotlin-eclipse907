@@ -33,14 +33,14 @@ class CarServiceTest {
     @Test
     fun test1() {
         val carCheckUp1 = CarCheckUp(
-            0,
+            1,
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             0
         )
         val carCheckUp2 = CarCheckUp(
-            1,
+            2,
             LocalDateTime.parse("2019-12-23T10:47:49"),
             "Alice",
             150.34,
@@ -56,7 +56,7 @@ class CarServiceTest {
             123456
         )
         every { carRepository.findById(0) } returns car
-        every { carCheckUpRepository.findByCarId(0) } returns listOf(carCheckUp2, carCheckUp1)
+        every { carCheckUpRepository.findByCarId(0) } returns listOf(carCheckUp1, carCheckUp2)
         assertThat(carService.getCarWithId(0)).isEqualTo(
             car.copy(
                 carCheckUps = mutableListOf(
@@ -144,27 +144,6 @@ class CarServiceTest {
 
     @Test
     fun test3() {
-        val carCheckUp1 = CarCheckUp(
-            0,
-            LocalDateTime.parse("2021-06-06T20:35:10"),
-            "Bob",
-            23.56,
-            0
-        )
-        val carCheckUp2 = CarCheckUp(
-            1,
-            LocalDateTime.parse("2019-12-23T10:47:49"),
-            "Alice",
-            150.34,
-            0
-        )
-        val carCheckUp3 = CarCheckUp(
-            2,
-            LocalDateTime.parse("2018-10-20T12:05:10"),
-            "Philip",
-            234.09,
-            0
-        )
         val car1 = Car(
             0,
             45,
@@ -184,19 +163,8 @@ class CarServiceTest {
             123654
         )
         every { carRepository.findAll() } returns listOf(car1, car2)
-        every { carCheckUpRepository.findByCarId(car1.id) } returns listOf(carCheckUp3, carCheckUp1, carCheckUp2)
-        every { carCheckUpRepository.findByCarId(car2.id) } returns listOf(carCheckUp3.copy(), carCheckUp2.copy(), carCheckUp1.copy())
         assertThat(carService.getAllCars()).isEqualTo(
-            listOf(
-                car1.copy(carCheckUps = mutableListOf(carCheckUp1, carCheckUp2, carCheckUp3)),
-                car2.copy(
-                    carCheckUps = mutableListOf(
-                        carCheckUp1.copy(),
-                        carCheckUp2.copy(),
-                        carCheckUp3.copy()
-                    )
-                )
-            )
+            listOf(car1.copy(), car2.copy())
         )
         verify(exactly = 1) { carRepository.findAll() }
     }

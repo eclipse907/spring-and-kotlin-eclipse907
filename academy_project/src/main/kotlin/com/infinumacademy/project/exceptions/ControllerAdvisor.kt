@@ -22,7 +22,7 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
     )
 
     @ExceptionHandler(DataAccessException::class)
-    fun handleDataAccessException(ex: DataAccessException) = ResponseEntity.internalServerError().body(
+    fun handleDataAccessException(ex: DataAccessException) = ResponseEntity.badRequest().body(
         ExceptionResponse(ex.message, null, LocalDateTime.now()))
 
 }

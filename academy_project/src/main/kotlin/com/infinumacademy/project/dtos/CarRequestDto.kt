@@ -13,13 +13,11 @@ data class CarRequestDto(
     val serialNumber: Long
 ) {
     fun toCar() = Car(
-        0,
-        ownerId,
-        dateAdded,
-        manufacturerName,
-        modelName,
-        productionYear,
-        serialNumber,
-        mutableListOf()
+        ownerId = ownerId,
+        dateAdded = dateAdded,
+        manufacturerName = manufacturerName,
+        modelName = modelName,
+        productionYear = productionYear,
+        serialNumber = serialNumber
     )
 }

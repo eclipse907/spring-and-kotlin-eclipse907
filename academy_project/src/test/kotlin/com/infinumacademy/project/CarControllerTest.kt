@@ -1,9 +1,9 @@
 package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.infinumacademy.project.dtos.CarCheckUpRequestDto
 import com.infinumacademy.project.dtos.CarRequestDto
 import com.infinumacademy.project.models.Car
-import com.infinumacademy.project.models.CarCheckUp
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -180,7 +180,7 @@ class CarControllerTest @Autowired constructor(
             "Toyota",
             "Corolla",
             Year.parse("2018"),
-            123456
+            654321
         )
         mvc.post("/cars") {
             content = mapper.writeValueAsString(carToAdd)
@@ -203,7 +203,7 @@ class CarControllerTest @Autowired constructor(
             "Toyota",
             "Corolla",
             Year.parse("2018"),
-            123456
+            126534
         )
         mvc.post("/cars") {
             content = mapper.writeValueAsString(carToAdd)
@@ -212,37 +212,34 @@ class CarControllerTest @Autowired constructor(
             status { isCreated() }
             header { stringValues("Location", "http://localhost/cars/4") }
         }
-        val carCheckUp1 = CarCheckUp(
-            25,
+        val carCheckUpToAdd1 = CarCheckUpRequestDto(
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
             4
         )
-        val carCheckUp2 = CarCheckUp(
-            34,
+        val carCheckUpToAdd2 = CarCheckUpRequestDto(
             LocalDateTime.parse("2018-12-23T10:30:10"),
             "Bob",
             23.56,
             4
         )
-        val carCheckUp3 = CarCheckUp(
-            63,
+        val carCheckUpToAdd3 = CarCheckUpRequestDto(
             LocalDateTime.parse("2017-08-06T15:05:30"),
             "Bob",
             23.56,
             4
         )
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp2)
+            content = mapper.writeValueAsString(carCheckUpToAdd2)
             contentType = MediaType.APPLICATION_JSON
         }
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp1)
+            content = mapper.writeValueAsString(carCheckUpToAdd1)
             contentType = MediaType.APPLICATION_JSON
         }
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp3)
+            content = mapper.writeValueAsString(carCheckUpToAdd3)
             contentType = MediaType.APPLICATION_JSON
         }
         val carToCheck = Car(
@@ -252,8 +249,12 @@ class CarControllerTest @Autowired constructor(
             "Toyota",
             "Corolla",
             Year.parse("2018"),
-            123456,
-            mutableListOf(carCheckUp1, carCheckUp2, carCheckUp3)
+            126534,
+            mutableListOf(
+                carCheckUpToAdd1.toCarCheckUp().copy(id = 2),
+                carCheckUpToAdd2.toCarCheckUp().copy(id = 1),
+                carCheckUpToAdd3.toCarCheckUp().copy(id = 3)
+            )
         )
         mvc.get("/cars/4").andExpect {
             status { is2xxSuccessful() }
