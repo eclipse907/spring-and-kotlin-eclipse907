@@ -1,25 +1,15 @@
 package com.infinumacademy.project.models
 
-import com.fasterxml.jackson.annotation.*
 import java.time.LocalDate
 import java.time.Year
 
-@JsonIgnoreProperties(value = ["id", "carCheckUps"], allowGetters = true)
 data class Car(
-    var id: Long? = null,
+    val id: Long = 0,
     val ownerId: Long,
-    @JsonFormat(timezone = JsonFormat.DEFAULT_TIMEZONE)
     val dateAdded: LocalDate,
     val manufacturerName: String,
     val modelName: String,
     val productionYear: Year,
     val serialNumber: Long,
-    val carCheckUps: MutableList<CarCheckUp> = mutableListOf()
-) {
-    fun addCarCheckUp(carCheckUp: CarCheckUp) {
-        when (carCheckUp.carId) {
-            id -> carCheckUps.add(carCheckUp)
-            else -> throw IllegalArgumentException("Car check-up car id does not match this car id")
-        }
-    }
-}
+    val carCheckUps: List<CarCheckUp> = listOf()
+)

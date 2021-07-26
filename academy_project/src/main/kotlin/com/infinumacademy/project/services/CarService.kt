@@ -3,18 +3,27 @@ package com.infinumacademy.project.services
 import com.infinumacademy.project.exceptions.CarNotFoundException
 import com.infinumacademy.project.exceptions.WrongCarDataException
 import com.infinumacademy.project.models.Car
-import com.infinumacademy.project.models.CarCheckUp
+import com.infinumacademy.project.repositories.CarCheckUpRepository
 import com.infinumacademy.project.repositories.CarRepository
+import org.springframework.dao.IncorrectResultSizeDataAccessException
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Year
 
 @Service
-class CarService(private val carRepository: CarRepository) {
+class CarService(
+    private val carRepository: CarRepository,
+    private val carCheckUpRepository: CarCheckUpRepository
+) {
 
-    fun getCarWithId(id: Long) = carRepository.findById(id)?.apply {
-        this.carCheckUps.sortByDescending { it.timeOfCheckUp }
-    } ?: throw CarNotFoundException(id)
+    fun getCarWithId(id: Long): Car {
+        try {
+            return carRepository.findById(id)?.copy(carCheckUps = carCheckUpRepository.findByCarId(id))
+                ?: throw CarNotFoundException(id)
+        } catch (ex: IncorrectResultSizeDataAccessException) {
+            throw CarNotFoundException(id)
+        }
+    }
 
     fun addCar(car: Car): Car {
         if (car.dateAdded > LocalDate.now()) {
@@ -29,11 +38,10 @@ class CarService(private val carRepository: CarRepository) {
         if (car.productionYear.isAfter(Year.now())) {
             throw WrongCarDataException("Car production year can't be after current year")
         }
-        car.id = carRepository.getAllCarIds().maxOrNull()?.plus(1) ?: 0
-        carRepository.save(car)
-        return car
+        val id = carRepository.save(car)
+        return car.copy(id = id)
     }
 
-    fun getAllCars() = carRepository.findAll().onEach { car -> car.carCheckUps.sortByDescending { it.timeOfCheckUp } }
+    fun getAllCars() = carRepository.findAll()
 
 }

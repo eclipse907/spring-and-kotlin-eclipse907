@@ -1,143 +1,187 @@
 package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.infinumacademy.project.controllers.CarCheckUpController
-import com.infinumacademy.project.exceptions.CarCheckUpNotFoundException
-import com.infinumacademy.project.exceptions.CarNotFoundException
-import com.infinumacademy.project.exceptions.WrongCarCheckUpDataException
+import com.infinumacademy.project.dtos.CarCheckUpRequestDto
+import com.infinumacademy.project.dtos.CarRequestDto
 import com.infinumacademy.project.models.CarCheckUp
-import com.infinumacademy.project.services.CarCheckUpService
-import com.ninjasquad.springmockk.MockkBean
-import io.mockk.every
-import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Year
 
-@WebMvcTest(CarCheckUpController::class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class CarCheckUpControllerTest @Autowired constructor(
     private val mvc: MockMvc,
     private val mapper: ObjectMapper
 ) {
 
-    @MockkBean
-    private lateinit var carCheckUpService: CarCheckUpService
-
     @Test
     fun test1() {
-        val carCheckUp = CarCheckUp(
-            0,
+        mvc.get("/car-checkups/0").andExpect {
+            status { isNotFound() }
+            jsonPath("$.message") {
+                value("404 NOT_FOUND \"Car check-up with id 0 not found\"")
+            }
+        }
+        val carToAdd = CarRequestDto(
+            45,
+            LocalDate.parse("2020-02-01"),
+            "Toyota",
+            "Yaris",
+            Year.parse("2018"),
+            123456
+        )
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(carToAdd)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isCreated() }
+            header { stringValues("Location", "http://localhost/cars/1") }
+        }
+        val carCheckUpToAdd1 = CarCheckUpRequestDto(
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
-            0
+            1
         )
-        every { carCheckUpService.getCarCheckUpWithId(0) } returns carCheckUp
-        mvc.get("/car-checkups/0").andExpect {
-            status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(carCheckUp)) }
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUpToAdd1)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isCreated() }
+            header { stringValues("Location", "http://localhost/car-checkups/1") }
         }
-        verify(exactly = 1) { carCheckUpService.getCarCheckUpWithId(0) }
+        val carCheckUpToAdd2 = CarCheckUpRequestDto(
+            LocalDateTime.parse("2021-10-15T20:35:10"),
+            "Bob",
+            23.56,
+            1
+        )
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUpToAdd2)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Date and time of check-up can't be after current date and time\"")
+            }
+        }
+        val carCheckUpToAdd3 = CarCheckUpRequestDto(
+            LocalDateTime.parse("2021-06-06T20:35:10"),
+            "",
+            23.56,
+            1
+        )
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUpToAdd3)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Worker name can't be blank\"")
+            }
+        }
+        val carCheckUpToAdd4 = CarCheckUpRequestDto(
+            LocalDateTime.parse("2021-06-06T20:35:10"),
+            "Bob",
+            -23.56,
+            1
+        )
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUpToAdd4)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Price can't be less than zero\"")
+            }
+        }
+        val carCheckUpToAdd5 = CarCheckUpRequestDto(
+            LocalDateTime.parse("2021-06-06T20:35:10"),
+            "Bob",
+            23.56,
+            45
+        )
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUpToAdd5)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+        }
     }
 
     @Test
     fun test2() {
-        val carCheckUp = CarCheckUp(
-            0,
-            LocalDateTime.parse("2021-06-06T20:35:10"),
+        val carCheckUpToAdd = CarCheckUpRequestDto(
+            LocalDateTime.parse("2018-12-23T10:30:10"),
             "Bob",
             23.56,
-            0
+            1
         )
-        every { carCheckUpService.addCarCheckUp(carCheckUp) } returns carCheckUp
-        every { carCheckUpService.getCarCheckUpWithId(0) } returns carCheckUp
         mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp)
+            content = mapper.writeValueAsString(carCheckUpToAdd)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
-            header { stringValues("Location", "http://localhost/car-checkups/0") }
+            header { stringValues("Location", "http://localhost/car-checkups/3") }
         }
-        mvc.get("/car-checkups/0").andExpect {
+        mvc.get("/car-checkups/3").andExpect {
             status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(carCheckUp)) }
+            content { json(mapper.writeValueAsString(carCheckUpToAdd.toCarCheckUp().copy(id = 3))) }
         }
-        verify(exactly = 1) { carCheckUpService.getCarCheckUpWithId(0) }
-        verify(exactly = 1) { carCheckUpService.addCarCheckUp(carCheckUp) }
     }
 
     @Test
     fun test3() {
         val carCheckUp1 = CarCheckUp(
-            0,
+            1,
             LocalDateTime.parse("2021-06-06T20:35:10"),
             "Bob",
             23.56,
-            0
-        )
-        val carCheckUp2 = CarCheckUp(
-            1,
-            LocalDateTime.parse("2019-12-23T10:47:49"),
-            "Alice",
-            150.34,
             1
         )
-        every { carCheckUpService.getAllCarCheckUps() } returns listOf(carCheckUp2, carCheckUp1)
+        val carCheckUp2 = CarCheckUp(
+            3,
+            LocalDateTime.parse("2018-12-23T10:30:10"),
+            "Bob",
+            23.56,
+            1
+        )
+        val carCheckUpToAdd3 = CarCheckUpRequestDto(
+            LocalDateTime.parse("2017-08-06T15:05:30"),
+            "Bob",
+            23.56,
+            1
+        )
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(carCheckUpToAdd3)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isCreated() }
+            header { stringValues("Location", "http://localhost/car-checkups/4") }
+        }
         mvc.get("/car-checkups").andExpect {
             status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(listOf(carCheckUp1, carCheckUp2))) }
+            content {
+                json(
+                    mapper.writeValueAsString(
+                        listOf(
+                            carCheckUp2,
+                            carCheckUpToAdd3.toCarCheckUp().copy(id = 4),
+                            carCheckUp1
+                        )
+                    )
+                )
+            }
         }
-        verify(exactly = 1) { carCheckUpService.getAllCarCheckUps() }
-    }
-
-    @Test
-    fun test4() {
-        val carCheckUp = CarCheckUp(
-            0,
-            LocalDateTime.parse("2025-06-06T20:35:10"),
-            "Bob",
-            23.56,
-            0
-        )
-        every { carCheckUpService.addCarCheckUp(carCheckUp) } throws WrongCarCheckUpDataException(
-            "Date and time of check-up can't be after current date and time"
-        )
-        mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp)
-            contentType = MediaType.APPLICATION_JSON
-        }.andExpect {
-            status { isBadRequest() }
-        }
-        every { carCheckUpService.getCarCheckUpWithId(0) } throws CarCheckUpNotFoundException(0)
-        mvc.get("/car-checkups/0").andExpect {
-            status { isNotFound() }
-        }
-        verify(exactly = 1) { carCheckUpService.addCarCheckUp(carCheckUp) }
-        verify(exactly = 1) { carCheckUpService.getCarCheckUpWithId(0) }
-    }
-
-    @Test
-    fun test5() {
-        val carCheckUp = CarCheckUp(
-            0,
-            LocalDateTime.parse("2021-06-06T20:35:10"),
-            "Bob",
-            23.56,
-            766
-        )
-        every { carCheckUpService.addCarCheckUp(carCheckUp) } throws CarNotFoundException(766)
-        mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUp)
-            contentType = MediaType.APPLICATION_JSON
-        }.andExpect {
-            status { isBadRequest() }
-        }
-        verify(exactly = 1) { carCheckUpService.addCarCheckUp(carCheckUp) }
     }
 
 }
