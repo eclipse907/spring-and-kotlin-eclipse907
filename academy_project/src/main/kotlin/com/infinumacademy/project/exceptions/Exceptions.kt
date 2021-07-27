@@ -14,5 +14,3 @@ class WrongCarDataException(message: String) : ResponseStatusException(HttpStatu
 class WrongCarCheckUpDataException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
 
 class WrongCarCheckUpCarIdException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
-
-class CarIdCreationException(message: String) : DataAccessException(message)

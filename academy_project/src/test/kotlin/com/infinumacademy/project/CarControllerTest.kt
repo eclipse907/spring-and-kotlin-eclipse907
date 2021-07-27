@@ -1,9 +1,8 @@
 package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.infinumacademy.project.dtos.CarCheckUpRequestDto
-import com.infinumacademy.project.dtos.CarRequestDto
-import com.infinumacademy.project.models.Car
+import com.infinumacademy.project.dtos.CarDto
+import com.infinumacademy.project.dtos.CarWithCarCheckUpsDto
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -13,8 +12,6 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.Year
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,16 +26,8 @@ class CarControllerTest @Autowired constructor(
             status { isNotFound() }
             jsonPath("$.message") { value("404 NOT_FOUND \"Car with id 0 not found\"") }
         }
-        val carToAdd1 = CarRequestDto(
-            45,
-            LocalDate.parse("2021-12-12"),
-            "Toyota",
-            "Yaris",
-            Year.parse("2018"),
-            123456,
-        )
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd1)
+            content = mapper.writeValueAsString(TestData.carToAdd1.copy(dateAdded = LocalDate.parse("2021-12-12")))
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
@@ -46,50 +35,26 @@ class CarControllerTest @Autowired constructor(
                 value("400 BAD_REQUEST \"Car added date can't be after current date\"")
             }
         }
-        val carToAdd2 = CarRequestDto(
-            45,
-            LocalDate.parse("2020-12-12"),
-            "",
-            "Yaris",
-            Year.parse("2018"),
-            123456,
-        )
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd2)
+            content = mapper.writeValueAsString(TestData.carToAdd1.copy(manufacturerName = ""))
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
             jsonPath("$.message") {
-                value("400 BAD_REQUEST \"Manufacturer name can't be blank\"")
+                value("Bad post request arguments")
             }
         }
-        val carToAdd3 = CarRequestDto(
-            45,
-            LocalDate.parse("2020-12-12"),
-            "Toyota",
-            "",
-            Year.parse("2018"),
-            123456,
-        )
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd3)
+            content = mapper.writeValueAsString(TestData.carToAdd1.copy(modelName = ""))
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
             jsonPath("$.message") {
-                value("400 BAD_REQUEST \"Model name can't be blank\"")
+                value("Bad post request arguments")
             }
         }
-        val carToAdd4 = CarRequestDto(
-            45,
-            LocalDate.parse("2020-12-12"),
-            "Toyota",
-            "Yaris",
-            Year.parse("2022"),
-            123456,
-        )
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd4)
+            content = mapper.writeValueAsString(TestData.carToAdd1.copy(productionYear = 2025))
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
@@ -101,16 +66,8 @@ class CarControllerTest @Autowired constructor(
 
     @Test
     fun test2() {
-        val carToAdd = CarRequestDto(
-            45,
-            LocalDate.parse("2020-02-01"),
-            "Toyota",
-            "Yaris",
-            Year.parse("2018"),
-            123456
-        )
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd)
+            content = mapper.writeValueAsString(TestData.carToAdd1)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
@@ -118,147 +75,122 @@ class CarControllerTest @Autowired constructor(
         }
         mvc.get("/cars/1").andExpect {
             status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(carToAdd.toCar().copy(id = 1))) }
+            content {
+                json(
+                    mapper.writeValueAsString(
+                        CarWithCarCheckUpsDto(TestData.carToAdd1.toCar().copy(id = 1), listOf())
+                    )
+                )
+            }
+        }
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(TestData.carToAdd2.copy(serialNumber = TestData.carToAdd1.serialNumber))
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
         }
     }
 
     @Test
     fun test3() {
-        val car1 = Car(
-            1,
-            45,
-            LocalDate.parse("2020-02-01"),
-            "Toyota",
-            "Yaris",
-            Year.parse("2018"),
-            123456
-        )
-        val carToAdd = CarRequestDto(
-            56,
-            LocalDate.parse("2019-09-03"),
-            "Opel",
-            "Astra",
-            Year.parse("2016"),
-            123654
-        )
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd)
-            contentType = MediaType.APPLICATION_JSON
-        }.andExpect {
-            status { isCreated() }
-            header { stringValues("Location", "http://localhost/cars/2") }
-        }
-        mvc.get("/cars").andExpect {
-            status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(listOf(car1, carToAdd.toCar().copy(id = 2)))) }
-        }
-    }
-
-    @Test
-    fun test4() {
-        val car1 = Car(
-            1,
-            45,
-            LocalDate.parse("2020-02-01"),
-            "Toyota",
-            "Yaris",
-            Year.parse("2018"),
-            123456
-        )
-        val car2 = Car(
-            2,
-            56,
-            LocalDate.parse("2019-09-03"),
-            "Opel",
-            "Astra",
-            Year.parse("2016"),
-            123654
-        )
-        val carToAdd = CarRequestDto(
-            45,
-            LocalDate.parse("2020-02-01"),
-            "Toyota",
-            "Corolla",
-            Year.parse("2018"),
-            654321
-        )
-        mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd)
+            content = mapper.writeValueAsString(TestData.carToAdd2)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
             header { stringValues("Location", "http://localhost/cars/3") }
         }
-        mvc.get("/cars").andExpect {
-            status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(listOf(car1, car2, carToAdd.toCar().copy(id = 3)))) }
-        }
-    }
-
-    @Test
-    fun test5() {
-        val carToAdd = CarRequestDto(
-            4654,
-            LocalDate.parse("2020-02-01"),
-            "Toyota",
-            "Corolla",
-            Year.parse("2018"),
-            126534
-        )
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd)
+            content = mapper.writeValueAsString(TestData.carToAdd3)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
             header { stringValues("Location", "http://localhost/cars/4") }
         }
-        val carCheckUpToAdd1 = CarCheckUpRequestDto(
-            LocalDateTime.parse("2021-06-06T20:35:10"),
-            "Bob",
-            23.56,
-            4
-        )
-        val carCheckUpToAdd2 = CarCheckUpRequestDto(
-            LocalDateTime.parse("2018-12-23T10:30:10"),
-            "Bob",
-            23.56,
-            4
-        )
-        val carCheckUpToAdd3 = CarCheckUpRequestDto(
-            LocalDateTime.parse("2017-08-06T15:05:30"),
-            "Bob",
-            23.56,
-            4
-        )
-        mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUpToAdd2)
-            contentType = MediaType.APPLICATION_JSON
-        }
-        mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUpToAdd1)
-            contentType = MediaType.APPLICATION_JSON
-        }
-        mvc.post("/car-checkups") {
-            content = mapper.writeValueAsString(carCheckUpToAdd3)
-            contentType = MediaType.APPLICATION_JSON
-        }
-        val carToCheck = Car(
-            4,
-            4654,
-            LocalDate.parse("2020-02-01"),
-            "Toyota",
-            "Corolla",
-            Year.parse("2018"),
-            126534,
-            mutableListOf(
-                carCheckUpToAdd1.toCarCheckUp().copy(id = 2),
-                carCheckUpToAdd2.toCarCheckUp().copy(id = 1),
-                carCheckUpToAdd3.toCarCheckUp().copy(id = 3)
-            )
-        )
-        mvc.get("/cars/4").andExpect {
+        mvc.get("/cars").andExpect {
             status { is2xxSuccessful() }
-            content { json(mapper.writeValueAsString(carToCheck)) }
+            content {
+                json(
+                    mapper.writeValueAsString(
+                        listOf(
+                            CarDto(TestData.carToAdd1.toCar().copy(id = 1)),
+                            CarDto(TestData.carToAdd2.toCar().copy(id = 3)),
+                            CarDto(TestData.carToAdd3.toCar().copy(id = 4))
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    @Test
+    fun test5() {
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(TestData.carCheckUpToAdd2)
+            contentType = MediaType.APPLICATION_JSON
+        }
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(TestData.carCheckUpToAdd1)
+            contentType = MediaType.APPLICATION_JSON
+        }
+        mvc.post("/car-checkups") {
+            content = mapper.writeValueAsString(TestData.carCheckUpToAdd3.copy(carId = 3))
+            contentType = MediaType.APPLICATION_JSON
+        }
+        mvc.get("/cars/1").andExpect {
+            status { is2xxSuccessful() }
+            content {
+                json(
+                    mapper.writeValueAsString(
+                        CarWithCarCheckUpsDto(
+                            TestData.carToAdd1.toCar().copy(id = 1),
+                            listOf(
+                                TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                                    .copy(id = 2),
+                                TestData.carCheckUpToAdd2.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                                    .copy(id = 1)
+                            )
+                        )
+                    )
+                )
+            }
+        }
+        mvc.get("/cars/3").andExpect {
+            status { is2xxSuccessful() }
+            content {
+                json(
+                    mapper.writeValueAsString(
+                        CarWithCarCheckUpsDto(
+                            TestData.carToAdd2.toCar().copy(id = 3),
+                            listOf(
+                                TestData.carCheckUpToAdd3.copy(carId = 3)
+                                    .toCarCheckUp { TestData.carToAdd2.toCar().copy(id = 3) }
+                                    .copy(id = 3))
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    @Test
+    fun test6() {
+        mvc.get("/cars/paged").andExpect {
+            status { is2xxSuccessful() }
+            content {
+                jsonPath("$.content") {
+                    value(
+                        mapper.writeValueAsString(
+                            listOf(
+                                CarDto(TestData.carToAdd1.toCar().copy(id = 1)),
+                                CarDto(TestData.carToAdd2.toCar().copy(id = 3)),
+                                CarDto(TestData.carToAdd3.toCar().copy(id = 4))
+                            )
+                        )
+                    )
+                }
+                jsonPath("$.totalElements") { value(3) }
+            }
         }
     }
 

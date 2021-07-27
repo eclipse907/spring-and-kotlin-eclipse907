@@ -1,7 +1,7 @@
 package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.infinumacademy.project.dtos.CarRequestDto
+import com.infinumacademy.project.dtos.AddCarDto
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -21,16 +21,8 @@ class TestContainersSetupTest @Autowired constructor(
 
     @Test
     fun test() {
-        val carToAdd = CarRequestDto(
-            45,
-            LocalDate.parse("2020-02-01"),
-            "Toyota",
-            "Yaris",
-            Year.parse("2018"),
-            123456
-        )
         mvc.post("/cars") {
-            content = mapper.writeValueAsString(carToAdd)
+            content = mapper.writeValueAsString(TestData.carToAdd1)
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isCreated() }
