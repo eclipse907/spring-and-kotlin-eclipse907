@@ -1,20 +1,21 @@
 package com.infinumacademy.project.controllers
 
-import com.infinumacademy.project.dtos.CarCheckUpRequestDto
-import com.infinumacademy.project.models.CarCheckUp
+import com.infinumacademy.project.dtos.AddCarCheckUpDto
 import com.infinumacademy.project.services.CarCheckUpService
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
+import javax.validation.Valid
 
 @Controller
 @RequestMapping("/car-checkups")
 class CarCheckUpController(private val carCheckUpService: CarCheckUpService) {
 
     @PostMapping
-    fun addCarCheckUp(@RequestBody carCheckUpToAdd: CarCheckUpRequestDto): ResponseEntity<Unit> {
-        val createdCheckUp = carCheckUpService.addCarCheckUp(carCheckUpToAdd.toCarCheckUp())
+    fun addCarCheckUp(@Valid @RequestBody carCheckUpToAdd: AddCarCheckUpDto): ResponseEntity<Unit> {
+        val createdCheckUp = carCheckUpService.addCarCheckUp(carCheckUpToAdd)
         return ResponseEntity.created(
             ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(createdCheckUp.id).toUri()
         ).build()
