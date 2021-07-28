@@ -27,7 +27,4 @@ class CarCheckUpController(private val carCheckUpService: CarCheckUpService) {
     @GetMapping
     fun getAllCarCheckUps() = ResponseEntity.ok(carCheckUpService.getAllCarCheckUps())
 
-    @GetMapping("/car-id/{car-id}")
-    fun getAllCarCheckUpsWithCarId(@PathVariable("car-id") carId: Long, pageable: Pageable) =
-        ResponseEntity.ok(carCheckUpService.getAllCarCheckUpsWithCarId(carId, pageable))
 }

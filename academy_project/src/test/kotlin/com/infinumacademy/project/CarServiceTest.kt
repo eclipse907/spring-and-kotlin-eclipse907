@@ -1,10 +1,8 @@
 package com.infinumacademy.project
 
 import com.infinumacademy.project.dtos.CarDto
-import com.infinumacademy.project.dtos.CarWithCarCheckUpsDto
 import com.infinumacademy.project.exceptions.CarNotFoundException
 import com.infinumacademy.project.exceptions.WrongCarDataException
-import com.infinumacademy.project.models.Car
 import com.infinumacademy.project.repositories.CarCheckUpRepository
 import com.infinumacademy.project.repositories.CarRepository
 import com.infinumacademy.project.services.CarService
@@ -40,7 +38,7 @@ class CarServiceTest {
             TestData.carCheckUpToAdd2.toCarCheckUp { car }
         )
         assertThat(carService.getCarWithId(1)).isEqualTo(
-            CarWithCarCheckUpsDto(car, listOf(
+            CarDto(car, listOf(
                 TestData.carCheckUpToAdd1.toCarCheckUp { car },
                 TestData.carCheckUpToAdd2.toCarCheckUp { car }
             ))

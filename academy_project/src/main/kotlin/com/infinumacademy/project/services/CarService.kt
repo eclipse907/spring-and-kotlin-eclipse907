@@ -2,7 +2,6 @@ package com.infinumacademy.project.services
 
 import com.infinumacademy.project.dtos.AddCarDto
 import com.infinumacademy.project.dtos.CarDto
-import com.infinumacademy.project.dtos.CarWithCarCheckUpsDto
 import com.infinumacademy.project.exceptions.CarNotFoundException
 import com.infinumacademy.project.exceptions.WrongCarDataException
 import com.infinumacademy.project.repositories.CarCheckUpRepository
@@ -19,7 +18,7 @@ class CarService(
 ) {
 
     fun getCarWithId(id: Long) = carRepository.findById(id)?.let {
-        CarWithCarCheckUpsDto(it, carCheckUpRepository.findByCarIdOrderByTimeOfCheckUpDesc(it.id))
+        CarDto(it, carCheckUpRepository.findByCarIdOrderByTimeOfCheckUpDesc(it.id))
     } ?: throw CarNotFoundException(id)
 
     fun addCar(carToAdd: AddCarDto): CarDto {

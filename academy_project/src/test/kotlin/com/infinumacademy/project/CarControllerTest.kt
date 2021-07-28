@@ -2,7 +2,6 @@ package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.dtos.CarDto
-import com.infinumacademy.project.dtos.CarWithCarCheckUpsDto
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -78,7 +77,7 @@ class CarControllerTest @Autowired constructor(
             content {
                 json(
                     mapper.writeValueAsString(
-                        CarWithCarCheckUpsDto(TestData.carToAdd1.toCar().copy(id = 1), listOf())
+                        CarDto(TestData.carToAdd1.toCar().copy(id = 1), listOf())
                     )
                 )
             }
@@ -142,7 +141,7 @@ class CarControllerTest @Autowired constructor(
             content {
                 json(
                     mapper.writeValueAsString(
-                        CarWithCarCheckUpsDto(
+                        CarDto(
                             TestData.carToAdd1.toCar().copy(id = 1),
                             listOf(
                                 TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
@@ -160,7 +159,7 @@ class CarControllerTest @Autowired constructor(
             content {
                 json(
                     mapper.writeValueAsString(
-                        CarWithCarCheckUpsDto(
+                        CarDto(
                             TestData.carToAdd2.toCar().copy(id = 3),
                             listOf(
                                 TestData.carCheckUpToAdd3.copy(carId = 3)

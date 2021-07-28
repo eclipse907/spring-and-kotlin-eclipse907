@@ -133,31 +133,4 @@ class CarCheckUpControllerTest @Autowired constructor(
         }
     }
 
-    @Test
-    fun test4() {
-        mvc.get("/car-checkups/car-id/1").andExpect {
-            status { is2xxSuccessful() }
-            content {
-                jsonPath("$.content") {
-                    value(
-                        mapper.writeValueAsString(
-                            listOf(
-                                CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
-                                    TestData.carToAdd1.toCar().copy(id = 1)
-                                }.copy(id = 1)),
-                                CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
-                                    TestData.carToAdd1.toCar().copy(id = 1)
-                                }.copy(id = 2)),
-                                CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp {
-                                    TestData.carToAdd1.toCar().copy(id = 1)
-                                }.copy(id = 3))
-                            )
-                        )
-                    )
-                }
-                jsonPath("$.totalElements") { value(3) }
-            }
-        }
-    }
-
 }
