@@ -2,6 +2,7 @@ package com.infinumacademy.project
 
 import com.infinumacademy.project.dtos.AddCarCheckUpDto
 import com.infinumacademy.project.dtos.AddCarDto
+import com.infinumacademy.project.dtos.AddCarModelDto
 import com.infinumacademy.project.models.CarCheckUp
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -49,5 +50,20 @@ object TestData {
         "Adam",
         45.97,
         1
+    )
+    val carModelToAdd1 = AddCarModelDto(
+        "Toyota",
+        "Yaris",
+        0
+    )
+    val carModelToAdd2 = AddCarModelDto(
+        "Opel",
+        "Astra",
+        0
+    )
+    val carModelToAdd3 = AddCarModelDto(
+        "Toyota",
+        "Corolla",
+        0
     )
 }

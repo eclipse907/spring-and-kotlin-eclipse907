@@ -11,5 +11,13 @@ services:
       - "POSTGRES_USER=admin"
       - "POSTGRES_PASSWORD=admin"
       - "POSTGRES_DB=project-db"
+
+  redis:
+    image: "redis:6.2.4-alpine"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redis-data:/data"
 volumes:
   project-db-data:
+  redis-data:

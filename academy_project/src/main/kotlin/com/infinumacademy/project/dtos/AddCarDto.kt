@@ -1,6 +1,7 @@
 package com.infinumacademy.project.dtos
 
 import com.infinumacademy.project.models.Car
+import com.infinumacademy.project.models.CarModel
 import java.time.LocalDate
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
@@ -19,16 +20,15 @@ data class AddCarDto(
     val modelName: String,
 
     @field:NotNull(message = "Production year can't be null")
-    val productionYear: Int,
+    val productionYear: Short,
 
     @field:NotNull(message = "Serial number can't be null")
     val serialNumber: Long
 ) {
-    fun toCar() = Car(
+    fun toCar(carModelFetcher: (String, String) -> CarModel) = Car(
         ownerId = ownerId,
         dateAdded = dateAdded,
-        manufacturerName = manufacturerName,
-        modelName = modelName,
+        carModel = carModelFetcher.invoke(manufacturerName, modelName),
         productionYear = productionYear,
         serialNumber = serialNumber
     )

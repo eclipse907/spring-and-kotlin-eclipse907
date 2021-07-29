@@ -2,7 +2,14 @@ package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.dtos.CarCheckUpDto
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockserver.client.MockServerClient
+import org.mockserver.model.HttpRequest
+import org.mockserver.model.HttpResponse
+import org.mockserver.model.Not
+import org.mockserver.model.RequestDefinition
+import org.mockserver.springtest.MockServerTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -12,12 +19,52 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.time.LocalDateTime
 
+@MockServerTest
 @SpringBootTest
 @AutoConfigureMockMvc
 class CarCheckUpControllerTest @Autowired constructor(
     private val mvc: MockMvc,
     private val mapper: ObjectMapper
 ) {
+
+    lateinit var mockServerClient: MockServerClient
+
+    @BeforeEach
+    fun setUp() {
+        mockServerClient
+            .`when`(
+                HttpRequest.request()
+                    .withPath("/api/v1/cars")
+            )
+            .respond(
+                HttpResponse.response()
+                    .withStatusCode(200)
+                    .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
+                    .withBody(
+                        """
+                            {
+                                "data": [
+                                    {
+                                        "manufacturer": "Toyota",
+                                        "model_name": "Yaris",
+                                        "is_common": 0
+                                    },
+                                    {
+                                        "manufacturer": "Opel",
+                                        "model_name": "Astra",
+                                        "is_common": 0
+                                    },
+                                    {
+                                        "manufacturer": "Toyota",
+                                        "model_name": "Corolla",
+                                        "is_common": 0
+                                    }
+                                ]
+                            }
+                    """.trimIndent()
+                    )
+            )
+    }
 
     @Test
     fun test1() {
@@ -96,7 +143,7 @@ class CarCheckUpControllerTest @Autowired constructor(
             status { is2xxSuccessful() }
             content {
                 json(mapper.writeValueAsString(CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
-                    TestData.carToAdd1.toCar().copy(id = 1)
+                    TestData.carToAdd1.toCar { _, _ -> TestData.carModelToAdd1.toCarModel().copy(id = 1) }.copy(id = 1)
                 }.copy(id = 2))))
             }
         }
@@ -118,13 +165,19 @@ class CarCheckUpControllerTest @Autowired constructor(
                     mapper.writeValueAsString(
                         listOf(
                             CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
-                                TestData.carToAdd1.toCar().copy(id = 1)
+                                TestData.carToAdd1.toCar { _, _ ->
+                                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                }.copy(id = 1)
                             }.copy(id = 2)),
                             CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp {
-                                TestData.carToAdd1.toCar().copy(id = 1)
+                                TestData.carToAdd1.toCar { _, _ ->
+                                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                }.copy(id = 1)
                             }.copy(id = 3)),
                             CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
-                                TestData.carToAdd1.toCar().copy(id = 1)
+                                TestData.carToAdd1.toCar { _, _ ->
+                                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                }.copy(id = 1)
                             }.copy(id = 1))
                         )
                     )

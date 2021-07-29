@@ -12,7 +12,7 @@ data class CarDto(
     val dateAdded: LocalDate,
     val manufacturerName: String,
     val modelName: String,
-    val productionYear: Int,
+    val productionYear: Short,
     val serialNumber: Long,
     @JsonInclude(Include.NON_EMPTY)
     val carCheckUps: List<CarCheckUpDto>
@@ -21,8 +21,8 @@ data class CarDto(
         car.id,
         car.ownerId,
         car.dateAdded,
-        car.manufacturerName,
-        car.modelName,
+        car.carModel.manufacturer,
+        car.carModel.modelName,
         car.productionYear,
         car.serialNumber,
         carCheckUps.map { CarCheckUpDto(it) }

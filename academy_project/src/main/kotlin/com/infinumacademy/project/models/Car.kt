@@ -2,7 +2,6 @@ package com.infinumacademy.project.models
 
 import java.time.LocalDate
 import javax.persistence.*
-import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 @Entity
@@ -18,16 +17,24 @@ data class Car(
     @NotNull(message = "Date added can't be null")
     val dateAdded: LocalDate,
 
-    @NotBlank(message = "Manufacturer name can't be blank")
-    val manufacturerName: String,
-
-    @NotBlank(message = "Model name can't be blank")
-    val modelName: String,
+    @ManyToOne(optional = false)
+    val carModel: CarModel,
 
     @NotNull(message = "Production year can't be null")
-    val productionYear: Int,
+    val productionYear: Short,
 
     @Column(unique = true)
     @NotNull(message = "Serial number can't be null")
     val serialNumber: Long
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Car
+
+        return id > 0 && id == other.id
+    }
+
+    override fun hashCode() = javaClass.hashCode()
+}

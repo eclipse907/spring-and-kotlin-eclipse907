@@ -2,7 +2,13 @@ package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.dtos.CarDto
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockserver.client.MockServerClient
+import org.mockserver.model.HttpRequest
+import org.mockserver.model.HttpResponse
+import org.mockserver.model.MediaType.*
+import org.mockserver.springtest.MockServerTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -12,12 +18,52 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.time.LocalDate
 
+@MockServerTest
 @SpringBootTest
 @AutoConfigureMockMvc
 class CarControllerTest @Autowired constructor(
     private val mvc: MockMvc,
     private val mapper: ObjectMapper
 ) {
+
+    lateinit var mockServerClient: MockServerClient
+
+    @BeforeEach
+    fun setUp() {
+        mockServerClient
+            .`when`(
+                HttpRequest.request()
+                    .withPath("/api/v1/cars")
+            )
+            .respond(
+                HttpResponse.response()
+                    .withStatusCode(200)
+                    .withContentType(APPLICATION_JSON)
+                    .withBody(
+                        """
+                            {
+                                "data": [
+                                    {
+                                        "manufacturer": "Toyota",
+                                        "model_name": "Yaris",
+                                        "is_common": 0
+                                    },
+                                    {
+                                        "manufacturer": "Opel",
+                                        "model_name": "Astra",
+                                        "is_common": 0
+                                    },
+                                    {
+                                        "manufacturer": "Toyota",
+                                        "model_name": "Corolla",
+                                        "is_common": 0
+                                    }
+                                ]
+                            }
+                    """.trimIndent()
+                    )
+            )
+    }
 
     @Test
     fun test1() {
@@ -61,6 +107,24 @@ class CarControllerTest @Autowired constructor(
                 value("400 BAD_REQUEST \"Car production year can't be after current year\"")
             }
         }
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(TestData.carToAdd1.copy(manufacturerName = "Void"))
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Non existent car model in car post request\"")
+            }
+        }
+        mvc.post("/cars") {
+            content = mapper.writeValueAsString(TestData.carToAdd1.copy(modelName = "Void"))
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Non existent car model in car post request\"")
+            }
+        }
     }
 
     @Test
@@ -77,7 +141,9 @@ class CarControllerTest @Autowired constructor(
             content {
                 json(
                     mapper.writeValueAsString(
-                        CarDto(TestData.carToAdd1.toCar().copy(id = 1), listOf())
+                        CarDto(TestData.carToAdd1.toCar { _, _ ->
+                            TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                        }.copy(id = 1), listOf())
                     )
                 )
             }
@@ -87,6 +153,9 @@ class CarControllerTest @Autowired constructor(
             contentType = MediaType.APPLICATION_JSON
         }.andExpect {
             status { isBadRequest() }
+            jsonPath("$.message") {
+                value("400 BAD_REQUEST \"Given car serial number already exists\"")
+            }
         }
     }
 
@@ -112,9 +181,15 @@ class CarControllerTest @Autowired constructor(
                 json(
                     mapper.writeValueAsString(
                         listOf(
-                            CarDto(TestData.carToAdd1.toCar().copy(id = 1)),
-                            CarDto(TestData.carToAdd2.toCar().copy(id = 3)),
-                            CarDto(TestData.carToAdd3.toCar().copy(id = 4))
+                            CarDto(TestData.carToAdd1.toCar { _, _ ->
+                                TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                            }.copy(id = 1)),
+                            CarDto(TestData.carToAdd2.toCar { _, _ ->
+                                TestData.carModelToAdd2.toCarModel().copy(id = 1)
+                            }.copy(id = 3)),
+                            CarDto(TestData.carToAdd3.toCar { _, _ ->
+                                TestData.carModelToAdd3.toCarModel().copy(id = 1)
+                            }.copy(id = 4))
                         )
                     )
                 )
@@ -123,7 +198,7 @@ class CarControllerTest @Autowired constructor(
     }
 
     @Test
-    fun test5() {
+    fun test4() {
         mvc.post("/car-checkups") {
             content = mapper.writeValueAsString(TestData.carCheckUpToAdd2)
             contentType = MediaType.APPLICATION_JSON
@@ -142,11 +217,21 @@ class CarControllerTest @Autowired constructor(
                 json(
                     mapper.writeValueAsString(
                         CarDto(
-                            TestData.carToAdd1.toCar().copy(id = 1),
+                            TestData.carToAdd1.toCar { _, _ ->
+                                TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                            }.copy(id = 1),
                             listOf(
-                                TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                                TestData.carCheckUpToAdd1.toCarCheckUp {
+                                    TestData.carToAdd1.toCar { _, _ ->
+                                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                    }.copy(id = 1)
+                                }
                                     .copy(id = 2),
-                                TestData.carCheckUpToAdd2.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                                TestData.carCheckUpToAdd2.toCarCheckUp {
+                                    TestData.carToAdd1.toCar { _, _ ->
+                                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                    }.copy(id = 1)
+                                }
                                     .copy(id = 1)
                             )
                         )
@@ -160,10 +245,16 @@ class CarControllerTest @Autowired constructor(
                 json(
                     mapper.writeValueAsString(
                         CarDto(
-                            TestData.carToAdd2.toCar().copy(id = 3),
+                            TestData.carToAdd2.toCar { _, _ ->
+                                TestData.carModelToAdd2.toCarModel().copy(id = 1)
+                            }.copy(id = 3),
                             listOf(
                                 TestData.carCheckUpToAdd3.copy(carId = 3)
-                                    .toCarCheckUp { TestData.carToAdd2.toCar().copy(id = 3) }
+                                    .toCarCheckUp {
+                                        TestData.carToAdd2.toCar { _, _ ->
+                                            TestData.carModelToAdd2.toCarModel().copy(id = 1)
+                                        }.copy(id = 3)
+                                    }
                                     .copy(id = 3))
                         )
                     )
@@ -173,7 +264,7 @@ class CarControllerTest @Autowired constructor(
     }
 
     @Test
-    fun test6() {
+    fun test5() {
         mvc.get("/cars/paged").andExpect {
             status { is2xxSuccessful() }
             content {
@@ -181,9 +272,15 @@ class CarControllerTest @Autowired constructor(
                     value(
                         mapper.writeValueAsString(
                             listOf(
-                                CarDto(TestData.carToAdd1.toCar().copy(id = 1)),
-                                CarDto(TestData.carToAdd2.toCar().copy(id = 3)),
-                                CarDto(TestData.carToAdd3.toCar().copy(id = 4))
+                                CarDto(TestData.carToAdd1.toCar { _, _ ->
+                                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                }.copy(id = 1)),
+                                CarDto(TestData.carToAdd2.toCar { _, _ ->
+                                    TestData.carModelToAdd2.toCarModel().copy(id = 1)
+                                }.copy(id = 3)),
+                                CarDto(TestData.carToAdd3.toCar { _, _ ->
+                                    TestData.carModelToAdd3.toCarModel().copy(id = 1)
+                                }.copy(id = 4))
                             )
                         )
                     )

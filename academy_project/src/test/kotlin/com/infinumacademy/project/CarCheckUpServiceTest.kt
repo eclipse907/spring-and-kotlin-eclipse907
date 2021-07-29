@@ -32,7 +32,11 @@ class CarCheckUpServiceTest {
 
     @Test
     fun test1() {
-        val carCheckUp = TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }.copy(id = 1)
+        val carCheckUp = TestData.carCheckUpToAdd1.toCarCheckUp {
+            TestData.carToAdd1.toCar { _, _ ->
+                TestData.carModelToAdd1.toCarModel().copy(id = 1)
+            }.copy(id = 1)
+        }.copy(id = 1)
         every { carCheckUpRepository.findById(1) } returns carCheckUp
         assertThat(carCheckUpService.getCarCheckUpWithId(1)).isEqualTo(CarCheckUpDto(carCheckUp))
         every { carCheckUpRepository.findById(2) } returns null
@@ -45,7 +49,9 @@ class CarCheckUpServiceTest {
 
     @Test
     fun test2() {
-        every { carRepository.findById(1) } returns TestData.carToAdd1.toCar().copy(id = 1)
+        every { carRepository.findById(1) } returns TestData.carToAdd1.toCar { _, _ ->
+            TestData.carModelToAdd1.toCarModel().copy(id = 1)
+        }.copy(id = 1)
         assertThatThrownBy {
             carCheckUpService.addCarCheckUp(
                 TestData.carCheckUpToAdd1.copy(timeOfCheckUp = LocalDateTime.parse("2023-08-07T10:35:10"))
@@ -57,8 +63,12 @@ class CarCheckUpServiceTest {
             carCheckUpService.addCarCheckUp(TestData.carCheckUpToAdd1.copy(carId = 47))
         }.isInstanceOf(WrongCarCheckUpCarIdException::class.java)
             .hasMessage("400 BAD_REQUEST \"No car with given id found\"")
-        val carCheckUp = TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
-        every { carCheckUpRepository.save(carCheckUp) } returns carCheckUp.copy(id = 1)
+        val carCheckUp = TestData.carCheckUpToAdd1.toCarCheckUp {
+            TestData.carToAdd1.toCar { _, _ ->
+                TestData.carModelToAdd1.toCarModel().copy(id = 1)
+            }.copy(id = 1)
+        }
+        every { carCheckUpRepository.save(any()) } returns carCheckUp.copy(id = 1)
         assertThat(carCheckUpService.addCarCheckUp(TestData.carCheckUpToAdd1)).isEqualTo(
             CarCheckUpDto(carCheckUp.copy(id = 1))
         )
@@ -69,17 +79,41 @@ class CarCheckUpServiceTest {
     @Test
     fun test3() {
         every { carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc() } returns listOf(
-            TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }.copy(id = 1),
-            TestData.carCheckUpToAdd2.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }.copy(id = 2),
-            TestData.carCheckUpToAdd3.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }.copy(id = 3)
+            TestData.carCheckUpToAdd1.toCarCheckUp {
+                TestData.carToAdd1.toCar { _, _ ->
+                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                }.copy(id = 1)
+            }.copy(id = 1),
+            TestData.carCheckUpToAdd2.toCarCheckUp {
+                TestData.carToAdd1.toCar { _, _ ->
+                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                }.copy(id = 1)
+            }.copy(id = 2),
+            TestData.carCheckUpToAdd3.toCarCheckUp {
+                TestData.carToAdd1.toCar { _, _ ->
+                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                }.copy(id = 1)
+            }.copy(id = 3)
         )
         assertThat(carCheckUpService.getAllCarCheckUps()).isEqualTo(
             listOf(
-                CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }
                     .copy(id = 1)),
-                CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }
                     .copy(id = 2)),
-                CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }
                     .copy(id = 3))
             )
         )
@@ -90,18 +124,42 @@ class CarCheckUpServiceTest {
     fun test4() {
         every { carCheckUpRepository.findByCarIdOrderByTimeOfCheckUpDesc(1, any()) } returns PageImpl(
             listOf(
-                TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }.copy(id = 1),
-                TestData.carCheckUpToAdd2.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }.copy(id = 2),
-                TestData.carCheckUpToAdd3.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }.copy(id = 3)
+                TestData.carCheckUpToAdd1.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }.copy(id = 1),
+                TestData.carCheckUpToAdd2.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }.copy(id = 2),
+                TestData.carCheckUpToAdd3.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }.copy(id = 3)
             )
         )
         assertThat(carCheckUpService.getAllCarCheckUpsWithCarId(1, Pageable.ofSize(20))).isEqualTo(
             PageImpl(listOf(
-                CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }
                     .copy(id = 1)),
-                CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }
                     .copy(id = 2)),
-                CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp { TestData.carToAdd1.toCar().copy(id = 1) }
+                CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp {
+                    TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)
+                }
                     .copy(id = 3))
             ))
         )
