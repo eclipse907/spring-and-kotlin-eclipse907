@@ -14,3 +14,9 @@ class WrongCarDataException(message: String) : ResponseStatusException(HttpStatu
 class WrongCarCheckUpDataException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
 
 class WrongCarCheckUpCarIdException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
+
+class WrongCarModelInCarRequestException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
+
+class NoCarModelsRetrievedException(message: String) : ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message)
+
+class CarSerialNumberAlreadyExistsException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)

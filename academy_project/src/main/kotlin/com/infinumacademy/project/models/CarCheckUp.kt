@@ -25,4 +25,15 @@ data class CarCheckUp(
 
     @ManyToOne(optional = false)
     val car: Car
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as CarCheckUp
+
+        return id > 0 && id == other.id
+    }
+
+    override fun hashCode() = javaClass.hashCode()
+}

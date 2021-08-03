@@ -2,21 +2,34 @@ package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.dtos.CarCheckUpDto
+import com.infinumacademy.project.repositories.CarModelRepository
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class CarCheckUpsForCarControllerTest @Autowired constructor(
     private val mvc: MockMvc,
-    private val mapper: ObjectMapper
+    private val mapper: ObjectMapper,
+    private val carModelRepository: CarModelRepository
 ) {
+
+    @BeforeEach
+    fun setUp() {
+        carModelRepository.saveAll(listOf(TestData.carModelToAdd1.toCarModel(),
+            TestData.carModelToAdd2.toCarModel(),
+            TestData.carModelToAdd3.toCarModel()
+        ))
+    }
 
     @Test
     fun test1() {
@@ -56,13 +69,19 @@ class CarCheckUpsForCarControllerTest @Autowired constructor(
                         mapper.writeValueAsString(
                             listOf(
                                 CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
-                                    TestData.carToAdd1.toCar().copy(id = 1)
+                                    TestData.carToAdd1.toCar { _, _ ->
+                                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                    }.copy(id = 1)
                                 }.copy(id = 1)),
                                 CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
-                                    TestData.carToAdd1.toCar().copy(id = 1)
+                                    TestData.carToAdd1.toCar { _, _ ->
+                                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                    }.copy(id = 1)
                                 }.copy(id = 2)),
                                 CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp {
-                                    TestData.carToAdd1.toCar().copy(id = 1)
+                                    TestData.carToAdd1.toCar { _, _ ->
+                                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                                    }.copy(id = 1)
                                 }.copy(id = 3))
                             )
                         )
