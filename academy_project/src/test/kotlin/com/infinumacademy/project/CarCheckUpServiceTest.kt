@@ -78,7 +78,7 @@ class CarCheckUpServiceTest {
 
     @Test
     fun test3() {
-        every { carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc() } returns listOf(
+        every { carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc(any()) } returns PageImpl(listOf(
             TestData.carCheckUpToAdd1.toCarCheckUp {
                 TestData.carToAdd1.toCar { _, _ ->
                     TestData.carModelToAdd1.toCarModel().copy(id = 1)
@@ -94,8 +94,8 @@ class CarCheckUpServiceTest {
                     TestData.carModelToAdd1.toCarModel().copy(id = 1)
                 }.copy(id = 1)
             }.copy(id = 3)
-        )
-        assertThat(carCheckUpService.getAllCarCheckUps()).isEqualTo(
+        ))
+        assertThat(carCheckUpService.getAllCarCheckUps(Pageable.unpaged())).isEqualTo(
             listOf(
                 CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
                     TestData.carToAdd1.toCar { _, _ ->
@@ -117,7 +117,7 @@ class CarCheckUpServiceTest {
                     .copy(id = 3))
             )
         )
-        verify(exactly = 1) { carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc() }
+        verify(exactly = 1) { carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc(any()) }
     }
 
     @Test
