@@ -28,37 +28,6 @@ class TestContainersSetupTest @Autowired constructor(
 
     @Test
     fun test() {
-        mockServerClient
-            .`when`(
-                HttpRequest.request()
-                    .withPath("/api/v1/cars")
-            )
-            .respond(
-                HttpResponse.response()
-                    .withStatusCode(200)
-                    .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
-                    .withBody(
-                        """
-                            "data": [
-                                {
-                                    "manufacturer": "Toyota",
-                                    "model_name": "Yaris",
-                                    "is_common": 0
-                                },
-                                {
-                                    "manufacturer": "Opel",
-                                    "model_name": "Astra",
-                                    "is_common": 0
-                                },
-                                {
-                                    "manufacturer": "Toyota",
-                                    "model_name": "Corolla",
-                                    "is_common": 0
-                                }
-                            ]
-                    """.trimIndent()
-                    )
-            )
         mvc.post("/cars") {
             content = mapper.writeValueAsString(TestData.carToAdd1)
             contentType = MediaType.APPLICATION_JSON

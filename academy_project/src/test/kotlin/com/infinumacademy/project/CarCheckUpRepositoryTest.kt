@@ -20,9 +20,10 @@ class CarCheckUpRepositoryTest @Autowired constructor(
 
     @BeforeEach
     fun setUp() {
-        carModelRepository.save(TestData.carModelToAdd1.toCarModel())
-        carModelRepository.save(TestData.carModelToAdd2.toCarModel())
-        carModelRepository.save(TestData.carModelToAdd3.toCarModel())
+        carModelRepository.saveAll(listOf(TestData.carModelToAdd1.toCarModel(),
+            TestData.carModelToAdd2.toCarModel(),
+            TestData.carModelToAdd3.toCarModel()
+        ))
     }
 
     @Test

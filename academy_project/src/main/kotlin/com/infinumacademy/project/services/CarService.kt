@@ -7,7 +7,6 @@ import com.infinumacademy.project.exceptions.CarSerialNumberAlreadyExistsExcepti
 import com.infinumacademy.project.exceptions.WrongCarDataException
 import com.infinumacademy.project.exceptions.WrongCarModelInCarRequestException
 import com.infinumacademy.project.repositories.CarCheckUpRepository
-import com.infinumacademy.project.repositories.CarModelRepository
 import com.infinumacademy.project.repositories.CarRepository
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -18,7 +17,7 @@ import java.time.Year
 class CarService(
     private val carRepository: CarRepository,
     private val carCheckUpRepository: CarCheckUpRepository,
-    private val carModelRepository: CarModelRepository
+    private val carModelService: CarModelService
 ) {
 
     fun getCarWithId(id: Long) = carRepository.findById(id)?.let {
@@ -36,8 +35,8 @@ class CarService(
             throw CarSerialNumberAlreadyExistsException("Given car serial number already exists")
         }
         return CarDto(carRepository.save(carToAdd.toCar { manufacturer, modelName ->
-            carModelRepository.findByManufacturerAndModelName(manufacturer, modelName)
-                ?: throw WrongCarModelInCarRequestException("Non existent car model in car post request")
+            carModelService.getCarModelWithManufacturerAndModelName(manufacturer, modelName)
+                ?: throw WrongCarModelInCarRequestException("No car model found with given manufacturer and model name")
         }))
     }
 

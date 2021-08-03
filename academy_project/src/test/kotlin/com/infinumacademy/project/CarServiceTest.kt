@@ -5,8 +5,8 @@ import com.infinumacademy.project.exceptions.CarNotFoundException
 import com.infinumacademy.project.exceptions.CarSerialNumberAlreadyExistsException
 import com.infinumacademy.project.exceptions.WrongCarDataException
 import com.infinumacademy.project.repositories.CarCheckUpRepository
-import com.infinumacademy.project.repositories.CarModelRepository
 import com.infinumacademy.project.repositories.CarRepository
+import com.infinumacademy.project.services.CarModelService
 import com.infinumacademy.project.services.CarService
 import io.mockk.every
 import io.mockk.mockk
@@ -23,13 +23,13 @@ class CarServiceTest {
 
     private val carRepository = mockk<CarRepository>()
     private val carCheckUpRepository = mockk<CarCheckUpRepository>()
-    private val carModelRepository = mockk<CarModelRepository>()
+    private val carModelService = mockk<CarModelService>()
 
     private lateinit var carService: CarService
 
     @BeforeEach
     fun setUp() {
-        carService = CarService(carRepository, carCheckUpRepository, carModelRepository)
+        carService = CarService(carRepository, carCheckUpRepository, carModelService)
     }
 
     @Test
@@ -79,7 +79,7 @@ class CarServiceTest {
         every { carRepository.save(any()) } returns car.copy(id = 1)
         every { carRepository.findBySerialNumber(car.serialNumber) } returns null
         every {
-            carModelRepository.findByManufacturerAndModelName(
+            carModelService.getCarModelWithManufacturerAndModelName(
                 car.carModel.manufacturer,
                 car.carModel.modelName
             )

@@ -21,9 +21,7 @@ data class CarModel(
     val modelName: String,
 
     @NotNull(message = "Is common can't be null")
-    @Min(0)
-    @Max(1)
-    val isCommon: Short
+    val isCommon: Boolean
 ) : Serializable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

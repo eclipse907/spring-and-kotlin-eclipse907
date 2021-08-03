@@ -2,65 +2,33 @@ package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.dtos.CarCheckUpDto
+import com.infinumacademy.project.repositories.CarModelRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockserver.client.MockServerClient
-import org.mockserver.model.HttpRequest
-import org.mockserver.model.HttpResponse
-import org.mockserver.springtest.MockServerTest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 
-@MockServerTest
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class CarCheckUpsForCarControllerTest @Autowired constructor(
     private val mvc: MockMvc,
-    private val mapper: ObjectMapper
+    private val mapper: ObjectMapper,
+    private val carModelRepository: CarModelRepository
 ) {
-
-    lateinit var mockServerClient: MockServerClient
 
     @BeforeEach
     fun setUp() {
-        mockServerClient
-            .`when`(
-                HttpRequest.request()
-                    .withPath("/api/v1/cars")
-            )
-            .respond(
-                HttpResponse.response()
-                    .withStatusCode(200)
-                    .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
-                    .withBody(
-                        """
-                            {
-                                "data": [
-                                    {
-                                        "manufacturer": "Toyota",
-                                        "model_name": "Yaris",
-                                        "is_common": 0
-                                    },
-                                    {
-                                        "manufacturer": "Opel",
-                                        "model_name": "Astra",
-                                        "is_common": 0
-                                    },
-                                    {
-                                        "manufacturer": "Toyota",
-                                        "model_name": "Corolla",
-                                        "is_common": 0
-                                    }
-                                ]
-                            }
-                    """.trimIndent()
-                    )
-            )
+        carModelRepository.saveAll(listOf(TestData.carModelToAdd1.toCarModel(),
+            TestData.carModelToAdd2.toCarModel(),
+            TestData.carModelToAdd3.toCarModel()
+        ))
     }
 
     @Test

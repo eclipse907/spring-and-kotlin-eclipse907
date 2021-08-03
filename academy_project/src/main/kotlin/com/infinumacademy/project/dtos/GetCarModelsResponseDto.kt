@@ -1,5 +1,5 @@
 package com.infinumacademy.project.dtos
 
 data class GetCarModelsResponseDto(
-    val data: List<AddCarModelDto>
+    val data: List<GetCarModelsDataDto>
 )
