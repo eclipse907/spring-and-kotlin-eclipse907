@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 
 @DataJpaTest
@@ -60,10 +61,12 @@ class CarRepositoryTest @Autowired constructor(
         }
         assertThat(carRepository.save(car3)).isEqualTo(car3.copy(id = 5))
         assertThat(carRepository.findAll(Pageable.unpaged())).isEqualTo(
-            listOf(
-                car1.copy(id = 3),
-                car2.copy(id = 4),
-                car3.copy(id = 5)
+            PageImpl(
+                listOf(
+                    car1.copy(id = 3),
+                    car2.copy(id = 4),
+                    car3.copy(id = 5)
+                )
             )
         )
     }

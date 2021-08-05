@@ -52,12 +52,6 @@ class CarCheckUpServiceTest {
         every { carRepository.findById(1) } returns TestData.carToAdd1.toCar { _, _ ->
             TestData.carModelToAdd1.toCarModel().copy(id = 1)
         }.copy(id = 1)
-        assertThatThrownBy {
-            carCheckUpService.addCarCheckUp(
-                TestData.carCheckUpToAdd1.copy(timeOfCheckUp = LocalDateTime.parse("2023-08-07T10:35:10"))
-            )
-        }.isInstanceOf(WrongCarCheckUpDataException::class.java)
-            .hasMessage("400 BAD_REQUEST \"Date and time of check-up can't be after current date and time\"")
         every { carRepository.findById(47) } returns null
         assertThatThrownBy {
             carCheckUpService.addCarCheckUp(TestData.carCheckUpToAdd1.copy(carId = 47))
@@ -78,44 +72,45 @@ class CarCheckUpServiceTest {
 
     @Test
     fun test3() {
-        every { carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc(any()) } returns PageImpl(listOf(
-            TestData.carCheckUpToAdd1.toCarCheckUp {
-                TestData.carToAdd1.toCar { _, _ ->
-                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                }.copy(id = 1)
-            }.copy(id = 1),
-            TestData.carCheckUpToAdd2.toCarCheckUp {
-                TestData.carToAdd1.toCar { _, _ ->
-                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                }.copy(id = 1)
-            }.copy(id = 2),
-            TestData.carCheckUpToAdd3.toCarCheckUp {
-                TestData.carToAdd1.toCar { _, _ ->
-                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                }.copy(id = 1)
-            }.copy(id = 3)
-        ))
-        assertThat(carCheckUpService.getAllCarCheckUps(Pageable.unpaged())).isEqualTo(
+        every { carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc(any()) } returns PageImpl(
             listOf(
-                CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
+                TestData.carCheckUpToAdd1.toCarCheckUp {
                     TestData.carToAdd1.toCar { _, _ ->
                         TestData.carModelToAdd1.toCarModel().copy(id = 1)
                     }.copy(id = 1)
-                }
-                    .copy(id = 1)),
-                CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
+                }.copy(id = 1),
+                TestData.carCheckUpToAdd2.toCarCheckUp {
                     TestData.carToAdd1.toCar { _, _ ->
                         TestData.carModelToAdd1.toCarModel().copy(id = 1)
                     }.copy(id = 1)
-                }
-                    .copy(id = 2)),
-                CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp {
+                }.copy(id = 2),
+                TestData.carCheckUpToAdd3.toCarCheckUp {
                     TestData.carToAdd1.toCar { _, _ ->
                         TestData.carModelToAdd1.toCarModel().copy(id = 1)
                     }.copy(id = 1)
-                }
-                    .copy(id = 3))
+                }.copy(id = 3)
             )
+        )
+        assertThat(carCheckUpService.getAllCarCheckUps(Pageable.unpaged())).isEqualTo(PageImpl(listOf(
+            CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
+                TestData.carToAdd1.toCar { _, _ ->
+                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                }.copy(id = 1)
+            }
+                .copy(id = 1)),
+            CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
+                TestData.carToAdd1.toCar { _, _ ->
+                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                }.copy(id = 1)
+            }
+                .copy(id = 2)),
+            CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp {
+                TestData.carToAdd1.toCar { _, _ ->
+                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                }.copy(id = 1)
+            }
+                .copy(id = 3))
+        ))
         )
         verify(exactly = 1) { carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc(any()) }
     }

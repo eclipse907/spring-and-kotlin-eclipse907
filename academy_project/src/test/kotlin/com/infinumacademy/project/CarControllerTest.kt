@@ -1,10 +1,7 @@
 package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.infinumacademy.project.dtos.CarDto
 import com.infinumacademy.project.repositories.CarModelRepository
-import com.infinumacademy.project.resources.CarResourceAssembler
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -22,8 +19,7 @@ import java.time.LocalDate
 class CarControllerTest @Autowired constructor(
     private val mvc: MockMvc,
     private val mapper: ObjectMapper,
-    private val carModelRepository: CarModelRepository,
-    private val resourceAssembler: CarResourceAssembler
+    private val carModelRepository: CarModelRepository
 ) {
 
     @Test
@@ -99,11 +95,25 @@ class CarControllerTest @Autowired constructor(
             status { is2xxSuccessful() }
             content {
                 json(
-                    mapper.writeValueAsString(
-                        resourceAssembler.toModel(CarDto(TestData.carToAdd1.toCar { _, _ ->
-                            TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                        }.copy(id = 1), listOf()))
-                    )
+                    """
+                    {
+                        "id": 1,
+                        "ownerId": 45,
+                        "dateAdded": "2020-02-01",
+                        "manufacturerName": "Toyota",
+                        "modelName": "Yaris",
+                        "productionYear": 2018,
+                        "serialNumber": 123456,
+                        "_links": {
+                            "self": {
+                                "href": "http://localhost/api/v1/cars/1"
+                            },
+                            "check-ups": {
+                                "href": "http://localhost/api/v1/cars/1/car-check-ups"
+                            }
+                        }
+                    }
+                """.trimIndent()
                 )
             }
         }
@@ -138,51 +148,77 @@ class CarControllerTest @Autowired constructor(
             status { is2xxSuccessful() }
             content {
                 json(
-                    mapper.writeValueAsString(
-                        resourceAssembler.toCollectionModel(
-                            listOf(
-                                CarDto(TestData.carToAdd1.toCar { _, _ ->
-                                    TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                                }.copy(id = 1)),
-                                CarDto(TestData.carToAdd2.toCar { _, _ ->
-                                    TestData.carModelToAdd2.toCarModel().copy(id = 1)
-                                }.copy(id = 3)),
-                                CarDto(TestData.carToAdd3.toCar { _, _ ->
-                                    TestData.carModelToAdd3.toCarModel().copy(id = 1)
-                                }.copy(id = 4))
-                            )
-                        )
-                    )
+                    """
+                                {
+                                    "_embedded": {
+                                        "item": [
+                                            {
+                                    "id": 1,
+                                    "ownerId": 45,
+                                    "dateAdded": "2020-02-01",
+                                    "manufacturerName": "Toyota",
+                                    "modelName": "Yaris",
+                                    "productionYear": 2018,
+                                    "serialNumber": 123456,
+                                    "_links": {
+                                        "self": {
+                                            "href": "http://localhost/api/v1/cars/1"
+                                        },
+                                        "check-ups": {
+                                            "href": "http://localhost/api/v1/cars/1/car-check-ups"
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": 2,
+                                    "ownerId": 56,
+                                    "dateAdded": "2019-09-03",
+                                    "manufacturerName": "Opel",
+                                    "modelName": "Astra",
+                                    "productionYear": 2016,
+                                    "serialNumber": 654321,
+                                    "_links": {
+                                        "self": {
+                                            "href": "http://localhost/api/v1/cars/2"
+                                        },
+                                        "check-ups": {
+                                            "href": "http://localhost/api/v1/cars/2/car-check-ups"
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": 3,
+                                    "ownerId": 78,
+                                    "dateAdded": "2021-02-01",
+                                    "manufacturerName": "Toyota",
+                                    "modelName": "Corolla",
+                                    "productionYear": 2020,
+                                    "serialNumber": 654123,
+                                    "_links": {
+                                        "self": {
+                                            "href": "http://localhost/api/v1/cars/3"
+                                        },
+                                        "check-ups": {
+                                            "href": "http://localhost/api/v1/cars/3/car-check-ups"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "_links": {
+                            "self": {
+                                "href": "http://localhost/api/v1/cars?page=0&size=20"
+                            }
+                        },
+                        "page": {
+                            "size": 20,
+                            "totalElements": 3,
+                            "totalPages": 1,
+                            "number": 0
+                        }
+                    }
+                """.trimIndent()
                 )
-            }
-        }
-    }
-
-    @Test
-    fun test4() {
-        mvc.get("/api/v1/cars").andExpect {
-            status { is2xxSuccessful() }
-            content {
-                jsonPath("$._embedded.item") {
-                    value(
-                        mapper.writeValueAsString(
-                            resourceAssembler.toCollectionModel(
-                                listOf(
-                                    CarDto(TestData.carToAdd1.toCar { _, _ ->
-                                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                                    }.copy(id = 1)),
-                                    CarDto(TestData.carToAdd2.toCar { _, _ ->
-                                        TestData.carModelToAdd2.toCarModel().copy(id = 1)
-                                    }.copy(id = 3)),
-                                    CarDto(TestData.carToAdd3.toCar { _, _ ->
-                                        TestData.carModelToAdd3.toCarModel().copy(id = 1)
-                                    }.copy(id = 4))
-                                )
-                            )
-                        )
-                    )
-                }
-                jsonPath("$.page.totalElements") { value(3) }
             }
         }
     }

@@ -38,16 +38,10 @@ class CarCheckUpService(
         LocalDateTime.now(), PageRequest.of(0, 10)
     ).content.map { CarCheckUpDto(it) }
 
-    fun getUpcomingCarCheckUps(duration: UpcomingCarCheckUpsInterval): List<CarCheckUpDto> {
-        val untilDate = when (duration) {
-            UpcomingCarCheckUpsInterval.WEEK -> LocalDateTime.now().plusWeeks(1)
-            UpcomingCarCheckUpsInterval.MONTH -> LocalDateTime.now().plusMonths(1)
-            UpcomingCarCheckUpsInterval.HALF_YEAR -> LocalDateTime.now().plusMonths(6)
-        }
-        return carCheckUpRepository.findAllByTimeOfCheckUpBetweenOrderByTimeOfCheckUp(
+    fun getUpcomingCarCheckUps(duration: UpcomingCarCheckUpsInterval) =
+        carCheckUpRepository.findAllByTimeOfCheckUpBetweenOrderByTimeOfCheckUp(
             LocalDateTime.now(),
-            untilDate
+            LocalDateTime.now().plus(duration.period)
         ).map { CarCheckUpDto(it) }
-    }
 
 }

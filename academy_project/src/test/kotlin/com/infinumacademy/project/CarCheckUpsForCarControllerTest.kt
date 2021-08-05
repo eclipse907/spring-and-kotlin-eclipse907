@@ -1,9 +1,7 @@
 package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.infinumacademy.project.dtos.CarCheckUpDto
 import com.infinumacademy.project.repositories.CarModelRepository
-import com.infinumacademy.project.resources.CarCheckUpResourceAssembler
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -20,8 +18,7 @@ import org.springframework.test.web.servlet.post
 class CarCheckUpsForCarControllerTest @Autowired constructor(
     private val mvc: MockMvc,
     private val mapper: ObjectMapper,
-    private val carModelRepository: CarModelRepository,
-    private val resourceAssembler: CarCheckUpResourceAssembler
+    private val carModelRepository: CarModelRepository
 ) {
 
     @Test
@@ -64,32 +61,67 @@ class CarCheckUpsForCarControllerTest @Autowired constructor(
         mvc.get("/api/v1/cars/1/car-check-ups").andExpect {
             status { is2xxSuccessful() }
             content {
-                jsonPath("$._embedded.item") {
-                    value(
-                        mapper.writeValueAsString(
-                            resourceAssembler.toCollectionModel(
-                                listOf(
-                                    CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {
-                                        TestData.carToAdd1.toCar { _, _ ->
-                                            TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                                        }.copy(id = 1)
-                                    }.copy(id = 1)),
-                                    CarCheckUpDto(TestData.carCheckUpToAdd2.toCarCheckUp {
-                                        TestData.carToAdd1.toCar { _, _ ->
-                                            TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                                        }.copy(id = 1)
-                                    }.copy(id = 2)),
-                                    CarCheckUpDto(TestData.carCheckUpToAdd3.toCarCheckUp {
-                                        TestData.carToAdd1.toCar { _, _ ->
-                                            TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                                        }.copy(id = 1)
-                                    }.copy(id = 3))
-                                )
-                            )
-                        )
-                    )
-                }
-                jsonPath("$.totalElements") { value(3) }
+                json("""
+                    {
+                        "_embedded": {
+                            "item": [
+                                    {
+                                        "id": 1,
+                                        "timeOfCheckUp": "2021-06-06T20:35:10",
+                                        "workerName": "Bob",
+                                        "price": 23.56,
+                                        "_links": {
+                                            "self": {
+                                                "href": "http://localhost/api/v1/car-checkups/1"
+                                            },
+                                            "car": {
+                                                "href": "http://localhost/api/v1/cars/1"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "id": 2,
+                                        "timeOfCheckUp": "2018-12-23T10:30:10",
+                                        "workerName": "Tom",
+                                        "price": 57.34,
+                                        "_links": {
+                                            "self": {
+                                                "href": "http://localhost/api/v1/car-checkups/2"
+                                            },
+                                            "car": {
+                                                "href": "http://localhost/api/v1/cars/1"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "id": 3,
+                                        "timeOfCheckUp": "2016-08-06T15:05:30",
+                                        "workerName": "Adam",
+                                        "price": 45.97,
+                                        "_links": {
+                                            "self": {
+                                                "href": "http://localhost/api/v1/car-checkups/3"
+                                            },
+                                            "car": {
+                                                "href": "http://localhost/api/v1/cars/1"
+                                            }
+                                        }
+                                    }
+                            ]
+                        },
+                        "_links": {
+                            "self": {
+                                "href": "http://localhost/api/v1/cars/1/car-check-ups?page=0&size=20"
+                            }
+                        },
+                        "page": {
+                            "size": 20,
+                            "totalElements": 3,
+                            "totalPages": 1,
+                            "number": 0
+                        }
+                    }
+                """.trimIndent())
             }
         }
     }
