@@ -10,4 +10,5 @@ interface CarRepository : Repository<Car, Long> {
     fun save(car: Car): Car
     fun findAll(pageable: Pageable): Page<Car>
     fun findBySerialNumber(serialNumber: Long): Car?
+    fun deleteById(id: Long)
 }

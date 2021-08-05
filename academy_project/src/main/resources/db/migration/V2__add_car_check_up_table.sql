@@ -4,5 +4,5 @@ CREATE TABLE IF NOT EXISTS car_check_up (
     worker_name TEXT NOT NULL CHECK (worker_name <> ''),
     price DOUBLE PRECISION NOT NULL CHECK ( price > 0 ),
     car_id BIGINT NOT NULL,
-    FOREIGN KEY (car_id) REFERENCES car(id) ON UPDATE CASCADE
+    FOREIGN KEY (car_id) REFERENCES car(id) ON UPDATE CASCADE ON DELETE CASCADE
 );

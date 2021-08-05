@@ -15,7 +15,7 @@ class CarCheckUpResourceAssembler : RepresentationModelAssemblerSupport<CarCheck
 
     override fun toModel(entity: CarCheckUpDto) = createModelWithId(entity.id, entity).apply {
         add(linkTo<CarController> {
-            getCar(entity.id)
+            getCar(entity.car.id)
         }.withRel("car"))
     }
 

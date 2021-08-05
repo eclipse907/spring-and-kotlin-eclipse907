@@ -19,7 +19,7 @@ class CarResourceAssembler :
 
     override fun toModel(entity: CarDto) = createModelWithId(entity.id, entity).apply {
         add(linkTo<CarCheckUpsForCarController> {
-            getAllCarCheckUpsWithCarId(
+            getAllCarCheckUpsForCarWithId(
                 entity.id,
                 noPagination,
                 nullAssembler

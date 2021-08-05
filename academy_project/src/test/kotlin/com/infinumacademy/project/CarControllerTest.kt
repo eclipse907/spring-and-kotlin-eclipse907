@@ -2,13 +2,16 @@ package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.repositories.CarModelRepository
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.time.LocalDate
@@ -23,6 +26,8 @@ class CarControllerTest @Autowired constructor(
 ) {
 
     @Test
+    @WithMockUser(authorities = ["SCOPE_ADMIN"])
+    @DisplayName("should throw 4xx codes when bad post request")
     fun test1() {
         carModelRepository.saveAll(
             listOf(
@@ -31,10 +36,6 @@ class CarControllerTest @Autowired constructor(
                 TestData.carModelToAdd3.toCarModel()
             )
         )
-        mvc.get("/api/v1/cars/0").andExpect {
-            status { isNotFound() }
-            jsonPath("$.message") { value("404 NOT_FOUND \"Car with id 0 not found\"") }
-        }
         mvc.post("/api/v1/cars") {
             content = mapper.writeValueAsString(TestData.carToAdd1.copy(dateAdded = LocalDate.parse("2021-12-12")))
             contentType = MediaType.APPLICATION_JSON
@@ -83,7 +84,19 @@ class CarControllerTest @Autowired constructor(
     }
 
     @Test
+    @WithMockUser(authorities = ["SCOPE_ADMIN"])
+    @DisplayName("should throw 404 not found when bad car id")
     fun test2() {
+        mvc.get("/api/v1/cars/0").andExpect {
+            status { isNotFound() }
+            jsonPath("$.message") { value("404 NOT_FOUND \"Car with id 0 not found\"") }
+        }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["SCOPE_ADMIN"])
+    @DisplayName("should save and return cars when post and get request")
+    fun test3() {
         mvc.post("/api/v1/cars") {
             content = mapper.writeValueAsString(TestData.carToAdd1)
             contentType = MediaType.APPLICATION_JSON
@@ -117,6 +130,12 @@ class CarControllerTest @Autowired constructor(
                 )
             }
         }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["SCOPE_ADMIN"])
+    @DisplayName("should throw 400 bad request when post has existent serial number")
+    fun test4() {
         mvc.post("/api/v1/cars") {
             content = mapper.writeValueAsString(TestData.carToAdd2.copy(serialNumber = TestData.carToAdd1.serialNumber))
             contentType = MediaType.APPLICATION_JSON
@@ -129,7 +148,9 @@ class CarControllerTest @Autowired constructor(
     }
 
     @Test
-    fun test3() {
+    @WithMockUser(authorities = ["SCOPE_ADMIN"])
+    @DisplayName("should return all cars when get all cars request")
+    fun test5() {
         mvc.post("/api/v1/cars") {
             content = mapper.writeValueAsString(TestData.carToAdd2)
             contentType = MediaType.APPLICATION_JSON
@@ -221,6 +242,42 @@ class CarControllerTest @Autowired constructor(
                 )
             }
         }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["SCOPE_ADMIN"])
+    @DisplayName("should delete car when delete request has good car id")
+    fun test6() {
+        mvc.delete("/api/v1/cars/1").andExpect { status { isAccepted() } }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["SCOPE_ADMIN"])
+    @DisplayName("should throw 404 not found when bad car id in delete request")
+    fun test7() {
+        mvc.delete("/api/v1/cars/34").andExpect { status { isNotFound() } }
+    }
+
+    @Test
+    @DisplayName("should throw 401 unauthorized when not logged in")
+    fun test8() {
+        mvc.post("/api/v1/cars") {
+            content = mapper.writeValueAsString(TestData.carToAdd1.copy(dateAdded = LocalDate.parse("2021-12-12")))
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isUnauthorized() }
+        }
+        mvc.get("/api/v1/cars/1").andExpect { status { isUnauthorized() } }
+        mvc.get("/api/v1/cars").andExpect { status { isUnauthorized() } }
+        mvc.delete("/api/v1/cars/1").andExpect { status { isUnauthorized() } }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["SCOPE_USER"])
+    @DisplayName("should throw 403 forbidden when logged in as user")
+    fun test9() {
+        mvc.get("/api/v1/cars").andExpect { status { isForbidden() } }
+        mvc.delete("/api/v1/cars/1").andExpect { status { isForbidden() } }
     }
 
 }

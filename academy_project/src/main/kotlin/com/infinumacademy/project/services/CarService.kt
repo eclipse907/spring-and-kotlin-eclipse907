@@ -42,4 +42,7 @@ class CarService(
 
     fun getAllCars(pageable: Pageable) = carRepository.findAll(pageable).map { CarDto(it) }
 
+    fun deleteCarWithId(id: Long) =
+        carRepository.findById(id)?.let { carRepository.deleteById(id) } ?: throw CarNotFoundException(id)
+
 }

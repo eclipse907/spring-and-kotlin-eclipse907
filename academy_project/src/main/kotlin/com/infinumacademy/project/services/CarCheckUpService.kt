@@ -4,6 +4,7 @@ import com.infinumacademy.project.dtos.AddCarCheckUpDto
 import com.infinumacademy.project.dtos.CarCheckUpDto
 import com.infinumacademy.project.dtos.UpcomingCarCheckUpsInterval
 import com.infinumacademy.project.exceptions.CarCheckUpNotFoundException
+import com.infinumacademy.project.exceptions.CarNotFoundException
 import com.infinumacademy.project.exceptions.WrongCarCheckUpCarIdException
 import com.infinumacademy.project.repositories.CarCheckUpRepository
 import com.infinumacademy.project.repositories.CarRepository
@@ -31,8 +32,9 @@ class CarCheckUpService(
     fun getAllCarCheckUps(pageable: Pageable) =
         carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc(pageable).map { CarCheckUpDto(it) }
 
-    fun getAllCarCheckUpsWithCarId(carId: Long, pageable: Pageable) =
+    fun getAllCarCheckUpsWithCarId(carId: Long, pageable: Pageable) = carRepository.findById(carId)?.let {
         carCheckUpRepository.findByCarIdOrderByTimeOfCheckUpDesc(carId, pageable).map { CarCheckUpDto(it) }
+    } ?: throw CarNotFoundException(carId)
 
     fun getLastTenCarCheckUpsPerformed() = carCheckUpRepository.findAllByTimeOfCheckUpBeforeOrderByTimeOfCheckUpDesc(
         LocalDateTime.now(), PageRequest.of(0, 10)
@@ -43,5 +45,9 @@ class CarCheckUpService(
             LocalDateTime.now(),
             LocalDateTime.now().plus(duration.period)
         ).map { CarCheckUpDto(it) }
+
+    fun deleteCarCheckUpWithId(id: Long) =
+        carCheckUpRepository.findById(id)?.let { carCheckUpRepository.deleteById(id) }
+            ?: throw CarCheckUpNotFoundException(id)
 
 }

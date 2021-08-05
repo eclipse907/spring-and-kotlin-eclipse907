@@ -27,4 +27,6 @@ interface CarCheckUpRepository : Repository<CarCheckUp, Long> {
         beforeDateTime: LocalDateTime
     ): List<CarCheckUp>
 
+    fun deleteById(id: Long)
+
 }
