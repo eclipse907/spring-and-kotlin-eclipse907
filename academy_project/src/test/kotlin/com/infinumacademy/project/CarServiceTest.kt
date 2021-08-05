@@ -90,25 +90,29 @@ class CarServiceTest {
 
     @Test
     fun test3() {
-        every { carRepository.findAll() } returns listOf(
-            TestData.carToAdd1.toCar { _, _ ->
-                TestData.carModelToAdd1.toCarModel().copy(id = 1)
-            }.copy(id = 1),
-            TestData.carToAdd2.toCar { _, _ ->
-                TestData.carModelToAdd2.toCarModel().copy(id = 1)
-            }.copy(id = 2)
-        )
-        assertThat(carService.getAllCars()).isEqualTo(
+        every { carRepository.findAll(any()) } returns PageImpl(
             listOf(
-                CarDto(TestData.carToAdd1.toCar { _, _ ->
+                TestData.carToAdd1.toCar { _, _ ->
                     TestData.carModelToAdd1.toCarModel().copy(id = 1)
-                }.copy(id = 1)),
-                CarDto(TestData.carToAdd2.toCar { _, _ ->
+                }.copy(id = 1),
+                TestData.carToAdd2.toCar { _, _ ->
                     TestData.carModelToAdd2.toCarModel().copy(id = 1)
-                }.copy(id = 2))
+                }.copy(id = 2)
             )
         )
-        verify(exactly = 1) { carRepository.findAll() }
+        assertThat(carService.getAllCars(Pageable.unpaged())).isEqualTo(
+            PageImpl(
+                listOf(
+                    CarDto(TestData.carToAdd1.toCar { _, _ ->
+                        TestData.carModelToAdd1.toCarModel().copy(id = 1)
+                    }.copy(id = 1)),
+                    CarDto(TestData.carToAdd2.toCar { _, _ ->
+                        TestData.carModelToAdd2.toCarModel().copy(id = 1)
+                    }.copy(id = 2))
+                )
+            )
+        )
+        verify(exactly = 1) { carRepository.findAll(any()) }
     }
 
     @Test

@@ -2,11 +2,12 @@ package com.infinumacademy.project.services
 
 import com.infinumacademy.project.dtos.AddCarCheckUpDto
 import com.infinumacademy.project.dtos.CarCheckUpDto
+import com.infinumacademy.project.dtos.UpcomingCarCheckUpsInterval
 import com.infinumacademy.project.exceptions.CarCheckUpNotFoundException
 import com.infinumacademy.project.exceptions.WrongCarCheckUpCarIdException
-import com.infinumacademy.project.exceptions.WrongCarCheckUpDataException
 import com.infinumacademy.project.repositories.CarCheckUpRepository
 import com.infinumacademy.project.repositories.CarRepository
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -22,18 +23,25 @@ class CarCheckUpService(
     } ?: throw CarCheckUpNotFoundException(id)
 
     fun addCarCheckUp(carCheckUpToAdd: AddCarCheckUpDto): CarCheckUpDto {
-        if (carCheckUpToAdd.timeOfCheckUp > LocalDateTime.now()) {
-            throw WrongCarCheckUpDataException("Date and time of check-up can't be after current date and time")
-        }
         return CarCheckUpDto(carCheckUpRepository.save(carCheckUpToAdd.toCarCheckUp {
             carRepository.findById(it) ?: throw WrongCarCheckUpCarIdException("No car with given id found")
         }))
     }
 
-    fun getAllCarCheckUps() =
-        carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc().map { CarCheckUpDto(it) }
+    fun getAllCarCheckUps(pageable: Pageable) =
+        carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc(pageable).map { CarCheckUpDto(it) }
 
     fun getAllCarCheckUpsWithCarId(carId: Long, pageable: Pageable) =
         carCheckUpRepository.findByCarIdOrderByTimeOfCheckUpDesc(carId, pageable).map { CarCheckUpDto(it) }
+
+    fun getLastTenCarCheckUpsPerformed() = carCheckUpRepository.findAllByTimeOfCheckUpBeforeOrderByTimeOfCheckUpDesc(
+        LocalDateTime.now(), PageRequest.of(0, 10)
+    ).content.map { CarCheckUpDto(it) }
+
+    fun getUpcomingCarCheckUps(duration: UpcomingCarCheckUpsInterval) =
+        carCheckUpRepository.findAllByTimeOfCheckUpBetweenOrderByTimeOfCheckUp(
+            LocalDateTime.now(),
+            LocalDateTime.now().plus(duration.period)
+        ).map { CarCheckUpDto(it) }
 
 }

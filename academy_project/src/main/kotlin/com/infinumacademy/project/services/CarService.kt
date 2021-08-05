@@ -40,8 +40,6 @@ class CarService(
         }))
     }
 
-    fun getAllCars() = carRepository.findAll().map { CarDto(it) }
-
     fun getAllCars(pageable: Pageable) = carRepository.findAll(pageable).map { CarDto(it) }
 
 }
