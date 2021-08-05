@@ -1,7 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.5.20"
+    id("org.jetbrains.kotlin.plugin.spring") version "1.5.20"
+    jacoco
 }
 
 group = "com.infinum.academy"
@@ -13,6 +15,12 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation("org.springframework:spring-context:5.3.8")
+
+    testImplementation("org.springframework:spring-test:5.3.7")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
+    testImplementation("org.assertj:assertj-core:3.20.2")
+    testImplementation("io.mockk:mockk:1.12.0")
 }
 
 tasks.withType<KotlinCompile> {
@@ -24,4 +32,15 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+}
+
+jacoco {
+    toolVersion = "0.8.7"
 }
