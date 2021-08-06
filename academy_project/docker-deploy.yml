@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  app:
+    image: "academy/project-image"
+    ports:
+      - "8080:8080"
+    environment:
+      - "SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/project-db"
+    depends_on:
+      - project-database
+  project-database:
+    image: "postgres:13-alpine"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "project-db-data:/var/lib/postgresql/data"
+    environment:
+      - "POSTGRES_USER=admin"
+      - "POSTGRES_PASSWORD=admin"
+      - "POSTGRES_DB=project-db"
+  redis:
+    image: "redis:6.2.4-alpine"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redis-data:/data"
+
+volumes:
+  project-db-data:
+  redis-data:
