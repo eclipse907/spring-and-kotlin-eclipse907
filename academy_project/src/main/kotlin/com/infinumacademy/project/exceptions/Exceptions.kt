@@ -10,8 +10,6 @@ class CarNotFoundException(id: Long) : ResponseStatusException(HttpStatus.NOT_FO
 
 class WrongCarDataException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
 
-class WrongCarCheckUpDataException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
-
 class WrongCarCheckUpCarIdException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
 
 class WrongCarModelInCarRequestException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
@@ -19,5 +17,3 @@ class WrongCarModelInCarRequestException(message: String) : ResponseStatusExcept
 class NoCarModelsRetrievedException(message: String) : ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message)
 
 class CarSerialNumberAlreadyExistsException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
-
-class IllegalUpcomingCarCheckUpsInterval(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
