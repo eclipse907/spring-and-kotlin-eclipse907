@@ -5,7 +5,6 @@ import com.infinumacademy.project.repositories.CarModelRepository
 import com.infinumacademy.project.repositories.CarRepository
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -26,9 +25,6 @@ class CarModelService(
     fun getCarModelWithManufacturerAndModelName(manufacturer: String, modelName: String) =
         carModelRepository.findByManufacturerAndModelName(manufacturer, modelName)
 
-    fun getAllCarModelsForCarsInDatabase() = carRepository.findAll(Pageable.unpaged())
-        .mapNotNull { carModelRepository.findById(it.carModel.id) }
-        .distinct()
-        .map { CarModelDto(it) }
+    fun getAllCarModelsForCarsInDatabase() = carRepository.findAllDistinctCarModels().map { CarModelDto(it) }
 
 }

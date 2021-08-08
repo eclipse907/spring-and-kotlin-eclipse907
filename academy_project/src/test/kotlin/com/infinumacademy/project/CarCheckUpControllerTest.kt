@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -359,7 +360,7 @@ class CarCheckUpControllerTest @Autowired constructor(
     @DisplayName("should return upcoming car check-ups of specified interval when called")
     fun test12() {
         val dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
-        val time1 = LocalDateTime.now().plusMonths(5)
+        val time1 = LocalDateTime.now().plusMonths(5).truncatedTo(ChronoUnit.MILLIS)
         mvc.post("/api/v1/car-checkups") {
             content = mapper.writeValueAsString(TestData.carCheckUpToAdd3.copy(timeOfCheckUp = time1))
             contentType = MediaType.APPLICATION_JSON
