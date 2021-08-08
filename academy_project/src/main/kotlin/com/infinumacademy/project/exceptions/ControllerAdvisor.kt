@@ -15,10 +15,10 @@ import java.time.LocalDateTime
 @ControllerAdvice
 class ControllerAdvisor : ResponseEntityExceptionHandler() {
 
-    @ExceptionHandler(Throwable::class)
+    /*@ExceptionHandler(Throwable::class)
     fun handleExceptions(ex: Throwable) = ResponseEntity.internalServerError().body(
         ExceptionResponse(ex.message, null, LocalDateTime.now())
-    )
+    )*/
 
     @ExceptionHandler(ResponseStatusException::class)
     fun handleResponseStatusException(ex: ResponseStatusException) = ResponseEntity.status(ex.status).body(

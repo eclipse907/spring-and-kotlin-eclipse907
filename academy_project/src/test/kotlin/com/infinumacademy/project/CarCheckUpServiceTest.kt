@@ -3,7 +3,6 @@ package com.infinumacademy.project
 import com.infinumacademy.project.dtos.CarCheckUpDto
 import com.infinumacademy.project.exceptions.CarCheckUpNotFoundException
 import com.infinumacademy.project.exceptions.WrongCarCheckUpCarIdException
-import com.infinumacademy.project.exceptions.WrongCarCheckUpDataException
 import com.infinumacademy.project.repositories.CarCheckUpRepository
 import com.infinumacademy.project.repositories.CarRepository
 import com.infinumacademy.project.services.CarCheckUpService
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
-import java.time.LocalDateTime
 
 class CarCheckUpServiceTest {
 
@@ -136,6 +134,9 @@ class CarCheckUpServiceTest {
                 }.copy(id = 3)
             )
         )
+        every { carRepository.findById(1) } returns TestData.carToAdd1.toCar { _, _ ->
+            TestData.carModelToAdd1.toCarModel().copy(id = 1)
+        }.copy(id = 1)
         assertThat(carCheckUpService.getAllCarCheckUpsWithCarId(1, Pageable.ofSize(20))).isEqualTo(
             PageImpl(listOf(
                 CarCheckUpDto(TestData.carCheckUpToAdd1.toCarCheckUp {

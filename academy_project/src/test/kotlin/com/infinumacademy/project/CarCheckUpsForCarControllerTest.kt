@@ -2,11 +2,13 @@ package com.infinumacademy.project
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.infinumacademy.project.repositories.CarModelRepository
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
@@ -22,6 +24,8 @@ class CarCheckUpsForCarControllerTest @Autowired constructor(
 ) {
 
     @Test
+    @WithMockUser(authorities = ["SCOPE_ADMIN"])
+    @DisplayName("should return car check-ups for car with id 1 when called")
     fun test1() {
         carModelRepository.saveAll(
             listOf(
@@ -57,6 +61,20 @@ class CarCheckUpsForCarControllerTest @Autowired constructor(
         }.andExpect {
             status { isCreated() }
             header { stringValues("Location", "http://localhost/api/v1/car-checkups/3") }
+        }
+        mvc.post("/api/v1/cars") {
+            content = mapper.writeValueAsString(TestData.carToAdd2)
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isCreated() }
+            header { stringValues("Location", "http://localhost/api/v1/cars/2") }
+        }
+        mvc.post("/api/v1/car-checkups") {
+            content = mapper.writeValueAsString(TestData.carCheckUpToAdd3.copy(carId = 2))
+            contentType = MediaType.APPLICATION_JSON
+        }.andExpect {
+            status { isCreated() }
+            header { stringValues("Location", "http://localhost/api/v1/car-checkups/4") }
         }
         mvc.get("/api/v1/cars/1/car-check-ups").andExpect {
             status { is2xxSuccessful() }
@@ -123,6 +141,23 @@ class CarCheckUpsForCarControllerTest @Autowired constructor(
                     }
                 """.trimIndent())
             }
+        }
+    }
+
+    @Test
+    @WithMockUser(authorities = ["SCOPE_USER"])
+    @DisplayName("should throw 404 not found when non existent car id called")
+    fun test2() {
+        mvc.get("/api/v1/cars/56/car-check-ups").andExpect {
+            status { isNotFound() }
+        }
+    }
+
+    @Test
+    @DisplayName("should throw 401 unauthorized when not logged in")
+    fun test3() {
+        mvc.get("/api/v1/cars/56/car-check-ups").andExpect {
+            status { isUnauthorized() }
         }
     }
 

@@ -6,6 +6,7 @@ import com.infinumacademy.project.services.CarCheckUpService
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PagedResourcesAssembler
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -19,7 +20,8 @@ class CarCheckUpsForCarController(
 ) {
 
     @GetMapping
-    fun getAllCarCheckUpsWithCarId(
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_USER')")
+    fun getAllCarCheckUpsForCarWithId(
         @PathVariable("carId") carId: Long,
         pageable: Pageable,
         pagedResourcesAssembler: PagedResourcesAssembler<CarCheckUpDto>
