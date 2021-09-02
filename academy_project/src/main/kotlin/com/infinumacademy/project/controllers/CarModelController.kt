@@ -1,7 +1,9 @@
 package com.infinumacademy.project.controllers
 
+import com.infinumacademy.project.resources.CarModelResource
 import com.infinumacademy.project.resources.CarModelResourceAssembler
 import com.infinumacademy.project.services.CarModelService
+import org.springframework.hateoas.CollectionModel
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -15,7 +17,7 @@ class CarModelController(
 ) {
 
     @GetMapping
-    fun getAllCarModelsOfStoredCars() =
+    fun getAllCarModelsOfStoredCars(): ResponseEntity<CollectionModel<CarModelResource>> =
         ResponseEntity.ok(resourceAssembler.toCollectionModel(carModelService.getAllCarModelsForCarsInDatabase()))
 
 }

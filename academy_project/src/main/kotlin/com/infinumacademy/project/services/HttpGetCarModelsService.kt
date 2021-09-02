@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.bodyToMono
 @RestService
 class HttpGetCarModelsService(private val webClient: WebClient) : GetCarModelsService {
 
-    override fun getAllCarModels() = webClient
+    override fun getAllCarModels(): List<AddCarModelDto> = webClient
         .get()
         .uri("/api/v1/cars")
         .retrieve()

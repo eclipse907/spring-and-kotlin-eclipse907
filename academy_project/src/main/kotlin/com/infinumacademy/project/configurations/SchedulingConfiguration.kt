@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
-import java.time.Duration
 import javax.sql.DataSource
 
 @Configuration

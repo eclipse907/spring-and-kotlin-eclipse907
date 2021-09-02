@@ -8,6 +8,7 @@ import com.infinumacademy.project.exceptions.CarNotFoundException
 import com.infinumacademy.project.exceptions.WrongCarCheckUpCarIdException
 import com.infinumacademy.project.repositories.CarCheckUpRepository
 import com.infinumacademy.project.repositories.CarRepository
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -32,13 +33,15 @@ class CarCheckUpService(
     fun getAllCarCheckUps(pageable: Pageable) =
         carCheckUpRepository.findAllByOrderByTimeOfCheckUpDesc(pageable).map { CarCheckUpDto(it) }
 
-    fun getAllCarCheckUpsWithCarId(carId: Long, pageable: Pageable) = carRepository.findById(carId)?.let {
-        carCheckUpRepository.findByCarIdOrderByTimeOfCheckUpDesc(carId, pageable).map { CarCheckUpDto(it) }
-    } ?: throw CarNotFoundException(carId)
+    fun getAllCarCheckUpsWithCarId(carId: Long, pageable: Pageable) =
+        carRepository.findById(carId)?.let {
+            carCheckUpRepository.findByCarIdOrderByTimeOfCheckUpDesc(carId, pageable).map { CarCheckUpDto(it) }
+        } ?: throw CarNotFoundException(carId)
 
-    fun getLastTenCarCheckUpsPerformed() = carCheckUpRepository.findAllByTimeOfCheckUpBeforeOrderByTimeOfCheckUpDesc(
-        LocalDateTime.now(), PageRequest.of(0, 10)
-    ).content.map { CarCheckUpDto(it) }
+    fun getLastTenCarCheckUpsPerformed() =
+        carCheckUpRepository.findAllByTimeOfCheckUpBeforeOrderByTimeOfCheckUpDesc(
+            LocalDateTime.now(), PageRequest.of(0, 10)
+        ).content.map { CarCheckUpDto(it) }
 
     fun getUpcomingCarCheckUps(duration: UpcomingCarCheckUpsInterval) =
         carCheckUpRepository.findAllByTimeOfCheckUpBetweenOrderByTimeOfCheckUp(

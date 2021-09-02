@@ -1,6 +1,7 @@
 package com.infinumacademy.project.services
 
 import com.infinumacademy.project.dtos.CarModelDto
+import com.infinumacademy.project.models.CarModel
 import com.infinumacademy.project.repositories.CarModelRepository
 import com.infinumacademy.project.repositories.CarRepository
 import org.springframework.cache.annotation.CacheEvict
@@ -17,7 +18,7 @@ class CarModelService(
 
     @Transactional
     @CacheEvict("car_model", allEntries = true)
-    fun updateCarModels() = getCarModelsService.getAllCarModels().filter {
+    fun updateCarModels(): Iterable<CarModel> = getCarModelsService.getAllCarModels().filter {
         carModelRepository.findByManufacturerAndModelName(it.manufacturer, it.modelName)?.let { false } ?: true
     }.map { it.toCarModel() }.run { carModelRepository.saveAll(this) }
 

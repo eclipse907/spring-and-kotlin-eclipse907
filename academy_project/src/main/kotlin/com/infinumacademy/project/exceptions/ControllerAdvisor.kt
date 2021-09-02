@@ -10,25 +10,32 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
+import java.lang.Exception
 import java.time.LocalDateTime
 
 @ControllerAdvice
 class ControllerAdvisor : ResponseEntityExceptionHandler() {
 
-    /*@ExceptionHandler(Throwable::class)
-    fun handleExceptions(ex: Throwable) = ResponseEntity.internalServerError().body(
-        ExceptionResponse(ex.message, null, LocalDateTime.now())
-    )*/
-
-    @ExceptionHandler(ResponseStatusException::class)
-    fun handleResponseStatusException(ex: ResponseStatusException) = ResponseEntity.status(ex.status).body(
-        ExceptionResponse(ex.message, ex.reason, LocalDateTime.now())
-    )
-
-    @ExceptionHandler(DataIntegrityViolationException::class)
-    fun handleDataIntegrityViolationException(ex: DataIntegrityViolationException) = ResponseEntity.badRequest().body(
+    @ExceptionHandler(Exception::class)
+    fun handleExceptions(ex: Exception) = ResponseEntity.internalServerError().body(
         ExceptionResponse(ex.message, null, LocalDateTime.now())
     )
+
+    @ExceptionHandler(ResourceNotFoundException::class)
+    fun handleResourceNotFoundException(ex: ResourceNotFoundException) =
+        ResponseEntity.status(HttpStatus.NOT_FOUND).body(ExceptionResponse(ex.message, null, LocalDateTime.now()))
+
+    @ExceptionHandler(WrongCarDataException::class)
+    fun handleWrongCarDataException(ex: WrongCarDataException) =
+        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ExceptionResponse(ex.message, null, LocalDateTime.now()))
+
+    @ExceptionHandler(WrongCarCheckUpDataException::class)
+    fun handleWrongCarCheckUpDataException(ex: WrongCarCheckUpDataException) =
+        ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ExceptionResponse(ex.message, null, LocalDateTime.now()))
+
+    @ExceptionHandler(NoCarModelsRetrievedException::class)
+    fun handleNoCarModelsRetrievedException(ex: NoCarModelsRetrievedException) =
+        ResponseEntity.internalServerError().body(ExceptionResponse(ex.message, null, LocalDateTime.now()))
 
     override fun handleMethodArgumentNotValid(
         ex: MethodArgumentNotValidException,
