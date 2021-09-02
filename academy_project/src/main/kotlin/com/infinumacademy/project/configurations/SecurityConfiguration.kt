@@ -24,6 +24,17 @@ class SecurityConfiguration {
                 sessionCreationPolicy = SessionCreationPolicy.STATELESS
             }
             authorizeRequests {
+                authorize(HttpMethod.POST, "api/v1/car-checkups", hasAuthority("SCOPE_ADMIN"))
+                authorize(HttpMethod.GET, "api/v1/car-checkups/{id}", hasAuthority("SCOPE_ADMIN"))
+                authorize(HttpMethod.GET, "api/v1/car-checkups", hasAuthority("SCOPE_ADMIN"))
+                authorize(HttpMethod.GET, "api/v1/car-checkups/performed/last-ten", hasAuthority("SCOPE_ADMIN"))
+                authorize(HttpMethod.GET, "api/v1/car-checkups/upcoming", hasAuthority("SCOPE_ADMIN"))
+                authorize(HttpMethod.DELETE, "api/v1/car-checkups/{id}", hasAuthority("SCOPE_ADMIN"))
+                authorize(HttpMethod.GET, "api/v1/cars/{carId}/car-check-ups", hasAnyAuthority("SCOPE_ADMIN", "SCOPE_USER"))
+                authorize(HttpMethod.POST, "api/v1/cars", hasAnyAuthority("SCOPE_ADMIN", "SCOPE_USER"))
+                authorize(HttpMethod.GET, "api/v1/cars/{id}", hasAnyAuthority("SCOPE_ADMIN", "SCOPE_USER"))
+                authorize(HttpMethod.GET, "api/v1/cars", hasAuthority("SCOPE_ADMIN"))
+                authorize(HttpMethod.DELETE, "api/v1/cars/{id}", hasAuthority("SCOPE_ADMIN"))
                 authorize(HttpMethod.GET, "api/v1/car-models", permitAll)
             }
             oauth2ResourceServer {

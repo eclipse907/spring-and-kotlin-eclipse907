@@ -1,19 +1,23 @@
 package com.infinumacademy.project.exceptions
 
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
+open class ResourceNotFoundException(message: String) : RuntimeException(message)
 
-class CarCheckUpNotFoundException(id: Long) :
-    ResponseStatusException(HttpStatus.NOT_FOUND, "Car check-up with id $id not found")
+class CarCheckUpNotFoundException(id: Long) : ResourceNotFoundException("Car check-up with id $id not found")
 
-class CarNotFoundException(id: Long) : ResponseStatusException(HttpStatus.NOT_FOUND, "Car with id $id not found")
+class CarNotFoundException(id: Long) : ResourceNotFoundException("Car with id $id not found")
 
-class WrongCarDataException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
+open class WrongCarDataException(message: String) : RuntimeException(message)
 
-class WrongCarCheckUpCarIdException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
+class WrongCarDateAddedException(message: String) : WrongCarDataException(message)
 
-class WrongCarModelInCarRequestException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
+class WrongCarProductionYearException(message: String): WrongCarDataException(message)
 
-class NoCarModelsRetrievedException(message: String) : ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, message)
+open class WrongCarCheckUpDataException(message: String): RuntimeException(message)
 
-class CarSerialNumberAlreadyExistsException(message: String) : ResponseStatusException(HttpStatus.BAD_REQUEST, message)
+class WrongCarCheckUpCarIdException(message: String) : WrongCarCheckUpDataException(message)
+
+class WrongCarModelInCarRequestException(message: String) : WrongCarDataException(message)
+
+class NoCarModelsRetrievedException(message: String) : RuntimeException(message)
+
+class CarSerialNumberAlreadyExistsException(message: String) : WrongCarDataException(message)
