@@ -32,6 +32,7 @@ class CarCheckUpController(
     }
 
     @GetMapping("/{id}")
+
     fun getCarCheckUp(@PathVariable("id") id: Long): ResponseEntity<CarCheckUpResource> =
         ResponseEntity.ok(resourceAssembler.toModel(carCheckUpService.getCarCheckUpWithId(id)))
 
